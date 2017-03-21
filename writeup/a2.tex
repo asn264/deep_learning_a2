@@ -1,0 +1,83 @@
+\documentclass[a4paper]{article}
+\usepackage{float}
+\usepackage{fullpage, amsmath, amssymb, verbatim} % Package to use full page
+\usepackage{graphicx}
+\usepackage{adjustbox}
+
+\title{Deep Learning: Assignment Two}
+\author{Aditi Nair (asn264) and Akash Shah (ass502)}
+\date{April 4, 2017}
+\begin{document}
+
+\maketitle
+
+\section{Batch Normalization}
+
+\begin{enumerate}
+\item{Let $x_1,...x_n$ be scalar features. Then we define the mean $\mu_n$ as:
+$$ \mu_n = \frac{1}{n} \sum_{i=1}^n x_i$$
+and the variance $\sigma_n^2$ as:
+$$ \sigma_n^2 = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_n)^2$$
+Now to normalize the feature $x_i$ (for $ 1 \leq i \leq n$), we compute: 
+$$\hat{x_i} = \frac{x_i - \mu_n}{\sigma_n}$$
+Then for all $\hat{x_i}$, the expected value is $0$:
+$$\sum_{i=1}^n \hat{x_i} = \sum_{i=1}^n \frac{x_i - \mu_n}{\sigma_n} 
+= \frac{1}{\sigma_n} \sum_{i=1}^n (x_i - \mu_n) 
+=  \frac{1}{\sigma_n}  \Bigg[ \Bigg( \sum_{i=1}^n x_i \Bigg) - n \cdot \mu_n    \Bigg]
+=  \frac{1}{\sigma_n}  \Bigg[ \sum_{i=1}^n x_i  - \sum_{i=1}^n x_i  \Bigg] = 0$$
+Since $\sum_{i=1}^n \hat{x_i} = 0$, the expected value $\hat{\mu} = \frac{1}{n} \sum_{i=1}^n \hat{x_i}$ is also 0.
+\newline
+\newline
+Then for all $\hat{x_i}$ the variance is $1$ since:
+$$\frac{1}{n}\sum_{i=1}^n (\hat{x_i} - \hat{\mu})^2 = \frac{1}{n}\sum_{i=1}^n (\hat{x_i} - 0)^2 = \frac{1}{n}\sum_{i=1}^n \hat{x_i}^2 
+=  \frac{1}{n}\sum_{i=1}^n \Big( \frac{x_i - \mu_n}{\sigma_n} \Big)^2 $$
+$$ = \frac{1}{n}\sum_{i=1}^n  \frac{(x_i - \mu_n)^2}{\sigma_n^2} = \frac{1}{n \cdot \sigma_n^2} \sum_{i=1}^n  (x_i - \mu_n)^2$$
+$$
+= \frac{n}{n \cdot \sum_{i=1}^n (x_i - \mu_n)^2}  \sum_{i=1}^n  (x_i - \mu_n)^2 = 1
+$$}
+\item{ For scalar features $x_1,...x_n$ the output of the BN module can be written as:
+$$y_i = BN_{\gamma,\beta}(x_i) = \gamma \hat{x_i} + \beta $$
+with
+$$\hat{x_i} = \frac{x_i - \mu_n}{\sqrt{\sigma_n^2 + \epsilon}}$$
+$\mu_n$ and $\sigma_n$ are defined as above. For numerical stability, the BN algorithm adds $\epsilon$ to $\sigma_n^2$ in the denominator before taking the square root. 
+
+$$ GRADIENT FORMULAS$$
+}
+\end{enumerate}
+
+\section{Convolution}
+
+\begin{enumerate}
+\item{}
+\item{}
+\item{}
+\end{enumerate}
+
+\section{Variants of Pooling}
+\begin{enumerate}
+\item{}
+\item{}
+\item{}
+\end{enumerate}
+
+\section{t-SNE}
+\begin{enumerate}
+\item{}
+\item{}
+\end{enumerate}
+
+\section{Sentence Classification}
+
+\subsection{ConvNet}
+
+\subsection{RNN}
+
+\subsection{Extra credit experiments of fastText}
+
+\subsection{Extra credit question}
+
+\section{Language Modeling}
+
+
+
+\end{document}
