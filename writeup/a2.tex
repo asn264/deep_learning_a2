@@ -48,22 +48,60 @@ $$ GRADIENT FORMULAS$$
 \section{Convolution}
 
 \begin{enumerate}
-\item{}
-\item{}
+\item{Assuming a stride of 1 and no zero padding, we will get a $3 \times 3$ matrix of $9$ values.}
+\item{SHOW WORK?
+\newline
+\newline
+Assuming an additive filter, the result of this convolution is:
+
+$$
+\begin{bmatrix}
+158 & 183 & 172 \\
+229 & 237 & 238 \\
+195 & 232 & 244 
+\end{bmatrix}
+$$
+
+ }
 \item{}
 \end{enumerate}
 
 \section{Variants of Pooling}
 \begin{enumerate}
-\item{}
-\item{}
-\item{}
+\item{Three types of pooling are max-pooling, average-pooling and L-P pooling. Max-pooling is implemented in different dimensions by the MaxPool1d, MaxPool2d and MaxPool3d classes in PyTorch. Average-pooling is implemented in different dimensions by the AvgPool1d, AvgPool2d, and AvgPool3d classes in PyTorch. L-P pooling is implemented in by the LPPool2d module in PyTorch. }
+\item{ Does this require the output of a full max-pooling operation on an image/matrix, or just one snapshot? }
+\item{ Max-pooling essentially applies a maximum function over (sometimes non-overlapping) regions of input matrices. For inputs with several layers of depth, max-pooling is generally applied separately for each layer's matrix. The pooling operation is used to reduce the size of the input matrices in each layer. Applying max-pooling will select only the maximum value in each region of the input matrix, discarding smaller values in each region. This can prevent overfitting by discarding information from the smaller values. In comparison, operations like average-pooling weigh all values in the region equally - and are therefore more conservative in discarding additional information. An average pooling operation in a region with many small values and one large value will have a relatively small output compared to the max pooling operation over the same region, which ignores the overall tendency of values in the region. Therefore the aggressive approach of the max pooling operation can be used as a regularizer. 
+}
 \end{enumerate}
 
 \section{t-SNE}
 \begin{enumerate}
-\item{}
-\item{}
+\item{
+The crowding problem refers to the tendency of dimensionality reduction techniques to crowd points of varying similarity close together. 
+\newline
+\newline
+Maarten and Hinton (2008) provide the following examples. Given a set of points which lie on a two-dimensional manifold in high-dimensional space, it is fairly straightforward to effectively describe their pairwise distances with a two-dimensional map. On the other hand, suppose these points lie on a higher-dimensional manifold - then it becomes much more difficult to model pairwise distances in two dimensions. Maarten and Hinton provide an example on a 10-dimensional manifold, where it is possible to have ten points which are mutually equidistant - this is clearly impossible to map into a two-dimensional space. 
+\newline
+\newline
+More generally, the distribution of possible pairwise distances in the high-dimensional space is very different than the distribution of possible pairwise distances in the two-dimensional space. Consider a set of points in high-dimensional space which are uniformly distributed around a central point. As the distance of the points from the central point grows, we see that in two dimensions there is less area to accommodate points which are moderately far from the center, than there is to accommodate points which are near to the center. Therefore, if we attempt to model small distances accurately in the two-dimensional space, we will be forced to place moderately large distances much further from the center point. Now, when trying to optimize the two-dimensional mapping, these too-far points will be pushed inward by the SNE objective function, effectively crowding all of the points together.
+\newline
+\newline
+How does t-SNE alleviate this? (type up later because boring...)
+
+}
+\item{ Let 
+$$C = KL(P || Q) = \sum_i \sum_j p_{ij} log \frac{p_{ij}}{q_{ij}} = \sum_i \sum_j p_{ij} log p_{ij} - p_{ij} log q_{ij}$$
+
+Note that $p_{ij}$ is constant with respect to $y_i$ but $q_{ij}$ is not. Then it follows that:
+$$\frac{\delta C}{\delta y_i} =  \frac{\delta \Big( \sum_i \sum_j p_{ij} log p_{ij} - p_{ij} log q_{ij} \Big) }{\delta y_i} 
+= \frac{\delta \Big( \sum_j p_{ij} log p_{ij} - p_{ij} log q_{ij} \Big) }{\delta y_i} 
+$$
+$$
+= \frac{ \delta \Big( \sum_j -p_{ij} log q_{ij} \Big) }{\delta y_i} 
+= - \sum_j p_{ij} \frac{\delta (log q_{ij})}{\delta y_i}
+$$
+
+}
 \end{enumerate}
 
 \section{Sentence Classification}
