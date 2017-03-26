@@ -18,31 +18,68 @@
 $$ \mu_n = \frac{1}{n} \sum_{i=1}^n x_i$$
 and the variance $\sigma_n^2$ as:
 $$ \sigma_n^2 = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_n)^2$$
-Now to normalize the feature $x_i$ (for $ 1 \leq i \leq n$), we compute: 
+
+Now to normalize the feature $x_i$ (for $ 1 \leq i \leq n$) to have zero mean and unit standard deviation, we compute: 
 $$\hat{x_i} = \frac{x_i - \mu_n}{\sigma_n}$$
-Then for all $\hat{x_i}$, the expected value is $0$:
-$$\sum_{i=1}^n \hat{x_i} = \sum_{i=1}^n \frac{x_i - \mu_n}{\sigma_n} 
-= \frac{1}{\sigma_n} \sum_{i=1}^n (x_i - \mu_n) 
-=  \frac{1}{\sigma_n}  \Bigg[ \Bigg( \sum_{i=1}^n x_i \Bigg) - n \cdot \mu_n    \Bigg]
+
+Then over all $\hat{x_i}$, the expected value is $0$:
+$$E[x_1,...,x_n] = \sum_{i=1}^n \hat{x_i} = \sum_{i=1}^n \frac{x_i - \mu_n}{\sigma_n} 
+= \frac{1}{\sigma_n} \sum_{i=1}^n (x_i - \mu_n) $$
+$$ =  \frac{1}{\sigma_n}  \Bigg[ \Bigg( \sum_{i=1}^n x_i \Bigg) - n \cdot \mu_n    \Bigg]
 =  \frac{1}{\sigma_n}  \Bigg[ \sum_{i=1}^n x_i  - \sum_{i=1}^n x_i  \Bigg] = 0$$
 Since $\sum_{i=1}^n \hat{x_i} = 0$, the expected value $\hat{\mu} = \frac{1}{n} \sum_{i=1}^n \hat{x_i}$ is also 0.
 \newline
 \newline
-Then for all $\hat{x_i}$ the variance is $1$ since:
-$$\frac{1}{n}\sum_{i=1}^n (\hat{x_i} - \hat{\mu})^2 = \frac{1}{n}\sum_{i=1}^n (\hat{x_i} - 0)^2 = \frac{1}{n}\sum_{i=1}^n \hat{x_i}^2 
+Then over all $\hat{x_i}$ the variance is $1$ since:
+$$Var[x_1,...,x_n] = \frac{1}{n}\sum_{i=1}^n (\hat{x_i} - \hat{\mu})^2 = \frac{1}{n}\sum_{i=1}^n (\hat{x_i} - 0)^2 $$
+$$ = \frac{1}{n}\sum_{i=1}^n \hat{x_i}^2 
 =  \frac{1}{n}\sum_{i=1}^n \Big( \frac{x_i - \mu_n}{\sigma_n} \Big)^2 $$
 $$ = \frac{1}{n}\sum_{i=1}^n  \frac{(x_i - \mu_n)^2}{\sigma_n^2} = \frac{1}{n \cdot \sigma_n^2} \sum_{i=1}^n  (x_i - \mu_n)^2$$
 $$
 = \frac{n}{n \cdot \sum_{i=1}^n (x_i - \mu_n)^2}  \sum_{i=1}^n  (x_i - \mu_n)^2 = 1
 $$}
+
 \item{ For scalar features $x_1,...x_n$ the output of the BN module can be written as:
 $$y_i = BN_{\gamma,\beta}(x_i) = \gamma \hat{x_i} + \beta $$
 with
 $$\hat{x_i} = \frac{x_i - \mu_n}{\sqrt{\sigma_n^2 + \epsilon}}$$
-$\mu_n$ and $\sigma_n$ are defined as above. For numerical stability, the BN algorithm adds $\epsilon$ to $\sigma_n^2$ in the denominator before taking the square root. 
+$\mu_n$ and $\sigma_n$ are defined as above. For numerical stability, the BN algorithm adds $\epsilon$ to $\sigma_n^2$ in the denominator of $\hat{x_i}$ before taking the square root. At the $k^{th}$ layer of a neural net, we write these variables are $y_i^k$, $\hat{x_i}^k$, $\beta^k$ and $\gamma^k$.
+\newline
+\newline
+\textbf{Now we write $\frac{\delta E}{\delta \gamma^k}$ in terms of $\frac{\delta E}{\delta y_i^k}$}:
+$$ \frac{\delta E}{\delta \gamma^k} = \frac{\delta E}{\delta y_i^k} \cdot \frac{\delta y_i^k}{\delta \gamma^k}$$
 
-$$ GRADIENT FORMULAS$$
+$\gamma^k$ is a constant and $y_i^k$ is a vector, so we compute $\frac{\delta y_i^k}{\delta \gamma^k}$ as:
+$$ \frac{\delta y_i^k}{\delta \gamma^k} = \Big \langle \frac{\delta (y_i^k)_1}{\delta \gamma^k},...,\frac{\delta (y_i^k)_n}{\delta \gamma^k} \Big \rangle^T$$
+
+For $1 \leq j \leq n$, we compute $\frac{\delta (y_i^k)_j}{\delta \gamma^k}$ as: 
+
+$$\frac{\delta (y_i^k)_j}{\delta \gamma^k} =  \frac{\delta ( \gamma^k (\hat{x_i})_j + \beta^k  )} {\delta \gamma^k} = \hat{x}_{ij}$$
+
+It follows that:
+$$ \frac{\delta y_i^k}{\delta \gamma^k} = \langle \hat{x}_{i1},...,\hat{x}_{in} \rangle^T = \hat{x_i} $$
+
+Finally we can write $\frac{\delta E}{\delta \gamma^k}$ as:
+$$ \frac{\delta E}{\delta \gamma^k} = \frac{\delta E}{\delta y_i^k} \cdot  \hat{x_i}$$
+
+\textbf{Next we write $\frac{\delta E}{\delta \beta^k}$ in terms of $\frac{\delta E}{\delta y_i^k}$}:
+
+$$\frac{\delta E}{\delta \beta^k} = \frac{\delta E}{\delta y_i^k} \frac{\delta y_i^k}{\delta \beta^k}$$
+
+$\beta^k$ is a constant and $y_i^k$ is a vector, so we compute $\frac{\delta y_i^k}{\delta \beta^k}$ as:
+$$\frac{\delta y_i^k}{\delta \beta^k} = \Big \langle \frac{\delta (y_i^k)_1}{\delta \beta^k},...,\frac{\delta (y_i^k)_n}{\delta \beta^k} \Big \rangle^T$$
+
+For $1 \leq j \leq n$, we compute $\frac{\delta (y_i^k)_j}{\delta \beta^k}$ as: 
+$$\frac{\delta (y_i^k)_j}{\delta \beta^k} =  \frac{\delta ( \gamma^k (\hat{x_i})_j + \beta^k  )} {\delta \beta^k} = 1$$
+
+It follows that:
+$$ \frac{\delta y_i^k}{\delta \beta^k} = \langle 1, ..., 1 \rangle^T$$
+
+Finally we can write $\frac{\delta E}{\delta \beta^k}$ as:
+$$ \frac{\delta E}{\delta \beta^k} = \frac{\delta E}{\delta y_i^k} \cdot  \vec{1}$$
 }
+
+
 \end{enumerate}
 
 \section{Convolution}
@@ -63,13 +100,13 @@ $$
 $$
 
  }
-\item{}
+\item{SKIPPED}
 \end{enumerate}
 
 \section{Variants of Pooling}
 \begin{enumerate}
 \item{Three types of pooling are max-pooling, average-pooling and L-P pooling. Max-pooling is implemented in different dimensions by the MaxPool1d, MaxPool2d and MaxPool3d classes in PyTorch. Average-pooling is implemented in different dimensions by the AvgPool1d, AvgPool2d, and AvgPool3d classes in PyTorch. L-P pooling is implemented in by the LPPool2d module in PyTorch. }
-\item{ Does this require the output of a full max-pooling operation on an image/matrix, or just one snapshot? }
+\item{ SKIPPED: Does this require the output of a full max-pooling operation on an image/matrix, or just one snapshot? }
 \item{ Max-pooling essentially applies a maximum function over (sometimes non-overlapping) regions of input matrices. For inputs with several layers of depth, max-pooling is generally applied separately for each layer's matrix. The pooling operation is used to reduce the size of the input matrices in each layer. Applying max-pooling will select only the maximum value in each region of the input matrix, discarding smaller values in each region. This can prevent overfitting by discarding information from the smaller values. In comparison, operations like average-pooling weigh all values in the region equally - and are therefore more conservative in discarding additional information. An average pooling operation in a region with many small values and one large value will have a relatively small output compared to the max pooling operation over the same region, which ignores the overall tendency of values in the region. Therefore the aggressive approach of the max pooling operation can be used as a regularizer. 
 }
 \end{enumerate}
@@ -77,16 +114,17 @@ $$
 \section{t-SNE}
 \begin{enumerate}
 \item{
-The crowding problem refers to the tendency of dimensionality reduction techniques to crowd points of varying similarity close together. 
+The crowding problem refers to the tendency of dimensionality reduction techniques to crowd points of varying similarity close together.  Generally, SNE techniques model pairwise distances in high-dimensional space by a probability distribution $P$, and pairwise distances in the low-dimensional space by a probability distribution $Q$. In order to ensure that the low-dimensional representation is faithful to important properties of the original representation, SNE optimizes the KL-divergence between $P$ and $Q$ so that the pairwise distances in the low-dimensional space are as similar as possible to those in the original high-dimensional space. 
 \newline
 \newline
-Maarten and Hinton (2008) provide the following examples. Given a set of points which lie on a two-dimensional manifold in high-dimensional space, it is fairly straightforward to effectively describe their pairwise distances with a two-dimensional map. On the other hand, suppose these points lie on a higher-dimensional manifold - then it becomes much more difficult to model pairwise distances in two dimensions. Maarten and Hinton provide an example on a 10-dimensional manifold, where it is possible to have ten points which are mutually equidistant - this is clearly impossible to map into a two-dimensional space. 
+Maarten and Hinton (2008) provide the following examples to illustrate the crowding problem. Given a set of points which lie on a two-dimensional manifold in high-dimensional space, it is fairly straightforward to effectively describe their pairwise distances with a two-dimensional map. On the other hand, suppose these points lie on a higher-dimensional manifold - then it becomes much more difficult to model pairwise distances in two dimensions. Maarten and Hinton provide an example on a 10-dimensional manifold, where it is possible to have ten points which are mutually equidistant - this is clearly impossible to map into a two-dimensional space. 
 \newline
 \newline
-More generally, the distribution of possible pairwise distances in the high-dimensional space is very different than the distribution of possible pairwise distances in the two-dimensional space. Consider a set of points in high-dimensional space which are uniformly distributed around a central point. As the distance of the points from the central point grows, we see that in two dimensions there is less area to accommodate points which are moderately far from the center, than there is to accommodate points which are near to the center. Therefore, if we attempt to model small distances accurately in the two-dimensional space, we will be forced to place moderately large distances much further from the center point. Now, when trying to optimize the two-dimensional mapping, these too-far points will be pushed inward by the SNE objective function, effectively crowding all of the points together.
+More generally, the distribution of possible pairwise distances in the high-dimensional space is very different than the distribution of possible pairwise distances in the two-dimensional space. Consider a set of points in high-dimensional space which are uniformly distributed around a central point. As the distance of the points from the central point grows, the volume of space these points could occupy also grows. However in two dimensions there is less area to accommodate points which are moderately far from the center than there is to accommodate points which are near to the center. Therefore, if we attempt to model small distances accurately in the two-dimensional space, we will be forced to place moderately large distances much further from the center point. Now, when trying to optimize the two-dimensional mapping, these too-far points will be pushed inward by the SNE objective function, effectively crowding all of the points together in the two-dimensional mapping.
 \newline
 \newline
-How does t-SNE alleviate this? (type up later because boring...)
+t-SNE alleviates this by representing distances between points as probabilities using specific distributions. Distances in the high-dimensional spaces are converted to probabilities using a Gaussian distribution, whereas distances in the low-dimensional spaces are converted to probabilities using a distribution with a much heavier tail. This way, moderately far points are assigned larger distances in the lower-dimensional mapping compared to when the lower-dimensional distances are computed using a small-tailed distribution. Then the distances between pairs of moderately far points in higher dimensional space are closer to the distances between the same pairs of points in low dimensional space, and the SNE objective function will not push the low-dimensional representations closer together as much, ameliorating the crowding problem. 
+
 
 }
 \item{ Let 
