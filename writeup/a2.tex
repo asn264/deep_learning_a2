@@ -23,11 +23,10 @@ Now to normalize the feature $x_i$ (for $ 1 \leq i \leq n$) to have zero mean an
 $$\hat{x_i} = \frac{x_i - \mu_n}{\sigma_n}$$
 
 Then over all $\hat{x_i}$, the expected value is $0$:
-$$E[x_1,...,x_n] = \sum_{i=1}^n \hat{x_i} = \sum_{i=1}^n \frac{x_i - \mu_n}{\sigma_n} 
-= \frac{1}{\sigma_n} \sum_{i=1}^n (x_i - \mu_n) $$
-$$ =  \frac{1}{\sigma_n}  \Bigg[ \Bigg( \sum_{i=1}^n x_i \Bigg) - n \cdot \mu_n    \Bigg]
-=  \frac{1}{\sigma_n}  \Bigg[ \sum_{i=1}^n x_i  - \sum_{i=1}^n x_i  \Bigg] = 0$$
-Since $\sum_{i=1}^n \hat{x_i} = 0$, the expected value $\hat{\mu} = \frac{1}{n} \sum_{i=1}^n \hat{x_i}$ is also 0.
+$$E[x_1,...,x_n] = \frac{1}{n} \sum_{i=1}^n \hat{x_i} = \frac{1}{n} \sum_{i=1}^n \frac{x_i - \mu_n}{\sigma_n} 
+= \frac{1}{n \sigma_n} \sum_{i=1}^n (x_i - \mu_n) $$
+$$ =  \frac{1}{n \sigma_n}  \Bigg[ \Bigg( \sum_{i=1}^n x_i \Bigg) - n \cdot \mu_n    \Bigg]
+=  \frac{1}{n \sigma_n}  \Bigg[ \sum_{i=1}^n x_i  - \sum_{i=1}^n x_i  \Bigg] = 0$$
 \newline
 \newline
 Then over all $\hat{x_i}$ the variance is $1$ since:
