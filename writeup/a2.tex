@@ -14,68 +14,58 @@
 \section{Batch Normalization}
 
 \begin{enumerate}
-\item{Let $x_1,...x_n$ be scalar features. Then we define the mean $\mu_n$ as:
-$$ \mu_n = \frac{1}{n} \sum_{i=1}^n x_i$$
-and the variance $\sigma_n^2$ as:
-$$ \sigma_n^2 = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_n)^2$$
+\item{Let $x_1,...x_m$ be $m$ data points, and let $x_i^k$ be the $k$-th feature of the $i$-th data point. Then we define the mean $\mu_k$, of feature $x^k$, over a mini-batch as:
+$$ \mu_k = \frac{1}{m} \sum_{i=1}^m x_i^k$$
+and the variance $\sigma_k^2$ as:
+$$ \sigma_k^2 = \frac{1}{m} \sum_{i=1}^m (x_i^k - \mu_k)^2$$
 
-Now to normalize the feature $x_i$ (for $ 1 \leq i \leq n$) to have zero mean and unit standard deviation, we compute: 
-$$\hat{x_i} = \frac{x_i - \mu_n}{\sigma_n}$$
+Now to normalize each feature $x^k$ (for $ 1 \leq k \leq n$) to have zero mean and unit standard deviation, we compute for each mini-batch value of that feature $x_i^k$, for $ 1 \leq i \leq m$: 
+$$\hat{x}_i^k = \frac{x_i^k - \mu_k}{\sigma_k}$$
 
-Then over all $\hat{x_i}$, the expected value is $0$:
-$$E[x_1,...,x_n] = \frac{1}{n} \sum_{i=1}^n \hat{x_i} = \frac{1}{n} \sum_{i=1}^n \frac{x_i - \mu_n}{\sigma_n} 
-= \frac{1}{n \sigma_n} \sum_{i=1}^n (x_i - \mu_n) $$
-$$ =  \frac{1}{n \sigma_n}  \Bigg[ \Bigg( \sum_{i=1}^n x_i \Bigg) - n \cdot \mu_n    \Bigg]
-=  \frac{1}{n \sigma_n}  \Bigg[ \sum_{i=1}^n x_i  - \sum_{i=1}^n x_i  \Bigg] = 0$$
+Then over all $\hat{x}_i^k$ per $k$, the expected value is $0$:
+$$E[\hat{x}_1^k,...,\hat{x}_m^k] = \frac{1}{m} \sum_{i=1}^m \hat{x}_i^k = \frac{1}{m} \sum_{i=1}^m \frac{x_i^k - \mu_k}{\sigma_k} 
+= \frac{1}{m} \frac{1}{\sigma_k} \sum_{i=1}^m (x_i^k - \mu_k) $$
+$$ =  \frac{1}{m} \frac{1}{\sigma_k}  \Bigg[ \Bigg( \sum_{i=1}^m x_i^k \Bigg) - m \cdot \mu_k    \Bigg]
+=  \frac{1}{m} \frac{1}{\sigma_k}  \Bigg[ \sum_{i=1}^m x_i^k  - \sum_{i=1}^m x_i^k  \Bigg] = 0$$
 \newline
 \newline
-Then over all $\hat{x_i}$ the variance is $1$ since:
-$$Var[x_1,...,x_n] = \frac{1}{n}\sum_{i=1}^n (\hat{x_i} - \hat{\mu})^2 = \frac{1}{n}\sum_{i=1}^n (\hat{x_i} - 0)^2 $$
-$$ = \frac{1}{n}\sum_{i=1}^n \hat{x_i}^2 
-=  \frac{1}{n}\sum_{i=1}^n \Big( \frac{x_i - \mu_n}{\sigma_n} \Big)^2 $$
-$$ = \frac{1}{n}\sum_{i=1}^n  \frac{(x_i - \mu_n)^2}{\sigma_n^2} = \frac{1}{n \cdot \sigma_n^2} \sum_{i=1}^n  (x_i - \mu_n)^2$$
+Then over all $\hat{x}_i^k$ per $k$, the variance is $1$ since:
+$$Var[\hat{x}_1^k,...,\hat{x}_m^k] = \frac{1}{m}\sum_{i=1}^m (\hat{x}_i^k - \hat{\mu}_k)^2 = \frac{1}{m}\sum_{i=1}^m (\hat{x}_i^k - 0)^2 $$
+$$ = \frac{1}{m}\sum_{i=1}^m (\hat{x}_i^k)^2 
+=  \frac{1}{m}\sum_{i=1}^m \Big( \frac{x_i^k- \mu_k}{\sigma_k} \Big)^2 $$
+$$ = \frac{1}{m}\sum_{i=1}^m  \frac{(x_i^k - \mu_k)^2}{\sigma_k^2} = \frac{1}{m \cdot \sigma_k^2} \sum_{i=1}^m  (x_i^k - \mu_k)^2$$
 $$
-= \frac{n}{n \cdot \sum_{i=1}^n (x_i - \mu_n)^2}  \sum_{i=1}^n  (x_i - \mu_n)^2 = 1
+= \frac{m}{m \cdot \sum_{i=1}^m (x_i^k - \mu_k)^2}  \sum_{i=1}^m  (x_i^k - \mu_k)^2 = 1
 $$}
 
-\item{ For scalar features $x_1,...x_n$ the output of the BN module can be written as:
-$$y_i = BN_{\gamma,\beta}(x_i) = \gamma \hat{x_i} + \beta $$
+\item{ For $x_i^k$, the $k$-th feature of the $i$-th data point, the output of the BN module can be written as:
+$$y_i^k = BN_{\gamma^k,\beta^k}(x_i^k) = \gamma^k \hat{x_i^k} + \beta^k $$
 with
-$$\hat{x_i} = \frac{x_i - \mu_n}{\sqrt{\sigma_n^2 + \epsilon}}$$
-$\mu_n$ and $\sigma_n$ are defined as above. For numerical stability, the BN algorithm adds $\epsilon$ to $\sigma_n^2$ in the denominator of $\hat{x_i}$ before taking the square root. At the $k^{th}$ layer of a neural net, we write these variables are $y_i^k$, $\hat{x_i}^k$, $\beta^k$ and $\gamma^k$.
+$$\hat{x_i}^k = \frac{x_i^k - \mu_k}{\sqrt{\sigma_k^2 + \epsilon}}$$
+$\mu_k$ and $\sigma_k$ are defined as above. For numerical stability, the BN algorithm adds $\epsilon$ to $\sigma_k^2$ in the denominator of $\hat{x_i}^k$ before taking the square root.
 \newline
 \newline
 \textbf{Now we write $\frac{\delta E}{\delta \gamma^k}$ in terms of $\frac{\delta E}{\delta y_i^k}$}:
-$$ \frac{\delta E}{\delta \gamma^k} = \frac{\delta E}{\delta y_i^k} \cdot \frac{\delta y_i^k}{\delta \gamma^k}$$
+\newline
+\newline
+$\gamma^k$ appears in the computation of each $y_i^k$ for $1 \leq i \leq m$. It follows that:
+$$\frac{\delta E}{\delta \gamma^k} = \sum_{i=1}^m \frac{\delta E}{\delta y_i^k} \frac{\delta y_i^k}{\delta \gamma^k} $$
+Then we notice that:
+$$ \frac{\delta y_i^k}{\delta \gamma^k} =  \frac{\delta ( \gamma^k \hat{x_i^k} + \beta^k )}{\delta \gamma^k} = \hat{x_i}^k$$
+Finally, we can write:
+$$\frac{\delta E}{\delta \gamma^k} = \sum_{i=1}^m \frac{\delta E}{\delta y_i^k} \hat{x_i}^k $$
+\newline
+\newline
+\textbf{Now we write $\frac{\delta E}{\delta \beta^k}$ in terms of $\frac{\delta E}{\delta y_i^k}$}:
+\newline
+\newline
+$\beta^k$ appears in the computation of each $y_i^k$ for $1 \leq i \leq m$. It follows that:
+$$\frac{\delta E}{\delta \beta^k} = \sum_{i=1}^m \frac{\delta E}{\delta y_i^k} \frac{\delta y_i^k}{\delta \beta^k} $$
+Then we notice that:
+$$ \frac{\delta y_i^k}{\delta \beta^k} =  \frac{\delta ( \gamma^k \hat{x_i^k} + \beta^k )}{\delta \beta^k} = 1$$
+Finally, we can write:
+$$\frac{\delta E}{\delta \beta^k} = \sum_{i=1}^m \frac{\delta E}{\delta y_i^k} $$
 
-$\gamma^k$ is a constant and $y_i^k$ is a vector, so we compute $\frac{\delta y_i^k}{\delta \gamma^k}$ as:
-$$ \frac{\delta y_i^k}{\delta \gamma^k} = \Big \langle \frac{\delta (y_i^k)_1}{\delta \gamma^k},...,\frac{\delta (y_i^k)_n}{\delta \gamma^k} \Big \rangle^T$$
-
-For $1 \leq j \leq n$, we compute $\frac{\delta (y_i^k)_j}{\delta \gamma^k}$ as: 
-
-$$\frac{\delta (y_i^k)_j}{\delta \gamma^k} =  \frac{\delta ( \gamma^k (\hat{x_i})_j + \beta^k  )} {\delta \gamma^k} = \hat{x}_{ij}$$
-
-It follows that:
-$$ \frac{\delta y_i^k}{\delta \gamma^k} = \langle \hat{x}_{i1},...,\hat{x}_{in} \rangle^T = \hat{x_i} $$
-
-Finally we can write $\frac{\delta E}{\delta \gamma^k}$ as:
-$$ \frac{\delta E}{\delta \gamma^k} = \frac{\delta E}{\delta y_i^k} \cdot  \hat{x_i}$$
-
-\textbf{Next we write $\frac{\delta E}{\delta \beta^k}$ in terms of $\frac{\delta E}{\delta y_i^k}$}:
-
-$$\frac{\delta E}{\delta \beta^k} = \frac{\delta E}{\delta y_i^k} \frac{\delta y_i^k}{\delta \beta^k}$$
-
-$\beta^k$ is a constant and $y_i^k$ is a vector, so we compute $\frac{\delta y_i^k}{\delta \beta^k}$ as:
-$$\frac{\delta y_i^k}{\delta \beta^k} = \Big \langle \frac{\delta (y_i^k)_1}{\delta \beta^k},...,\frac{\delta (y_i^k)_n}{\delta \beta^k} \Big \rangle^T$$
-
-For $1 \leq j \leq n$, we compute $\frac{\delta (y_i^k)_j}{\delta \beta^k}$ as: 
-$$\frac{\delta (y_i^k)_j}{\delta \beta^k} =  \frac{\delta ( \gamma^k (\hat{x_i})_j + \beta^k  )} {\delta \beta^k} = 1$$
-
-It follows that:
-$$ \frac{\delta y_i^k}{\delta \beta^k} = \langle 1, ..., 1 \rangle^T$$
-
-Finally we can write $\frac{\delta E}{\delta \beta^k}$ as:
-$$ \frac{\delta E}{\delta \beta^k} = \frac{\delta E}{\delta y_i^k} \cdot  \vec{1}$$
 }
 
 
@@ -207,9 +197,46 @@ $$\frac{\delta C }{\delta y_i}  = 4 \sum_j  (p_{ij} - q_{ij}) (1+d_{ij}^2)^{-1} 
 
 \section{Sentence Classification}
 
+
 \subsection{ConvNet}
 
+\begin{enumerate}
+
+\item{
+Given a sentence of 10 words, each word has a trained word embedding vector of dimension 300. Thus, we can construct an input matrix of dimension 10 x 300, where the $i$-th row is the word embedding of the $i$-th word in the sentence. Each filter will have length equal to the word embedding size, but can have a varied width (or filter size). If we have 5 filters, with filter sizes of 2, 3, 4, 5, and 6, and each with a length of 300, then by passing each filter over the input matrix and performing convolutions, we will obtain a hidden feature vector for each filter. For a filter with size $k$, the hidden feature vector will have a length of $10-k+1$, so we will obtain 5 feature vectors with lengths 9, 8, 7, 6, and 5. 
+\\\\By applying max-pooling to each feature vector, each of the 5 vectors will be reduced to a scalar value, and concatenating them will result in a vector of length 5. We can then pass this vector of length 5 into a fully-connected layer with 5 input units and 3 output units. The output of this fully-connected layer will be a vector with 3 scores, one for each class. Finally, we pass the vector of scores into a softmax function to obtain a probability for each class. 
+}
+
+\item{
+In a single-layer CNN such as the one described above, small filter sizes can be viewed as small n-gram featurizations of the input but in a dense and distributed vector space, while large filter sizes would be larger n-grams. However, in a deep CNN, even small filter sizes can result in learnings of language dependencies across higher order n-grams because adjacent k-grams that did not overlap during the convolution in the current layer will then be convoluted over together in the next layer. 
+\\\\
+Our approach in choosing filter sizes would be to have multiple filters of various sizes so that different featurizations can be learned by the CNN. To select filter sizes, apply convolution filters which are as tall as the value of $n$-grams which you think will be helpful for the classification task. Next, the model applies max-pooling (and a non-linearity) to the output of each filter, followed by a fully-connected layer and a soft-max function. Therefore, if a single convolution filter is more or less important than others, then the column of the fully-connected layer's weight matrix which uses the output of max-pooling on that filter will be given smaller weights by a successful optimization algorithm.
+}
+\end{enumerate}
+
 \subsection{RNN}
+
+\begin{enumerate}
+
+\item{ Let $w_1,...,w_T$ be an input sentence, and let $x_1,...x_T$ be the corresponding word embeddings. Let $f$ represent a recursive neural net which computes the hidden state $h_t$ of the network at time $t$. At time $t$ in a simple RNN, we use the hidden state of the RNN at time $t-1$ - $h_{t-1}$ and the word embedding for the current input word  - $x_t$ - to generate the hidden state vector at time $t$: 
+$$h_t = f(x_t, h_{t-1}) $$ 
+(Usually we set $h_0 = \vec{0}$.) Now, we can recursively apply $f$ to the sequence $x_1,...x_T$ to get $h_T$, the hidden state at the final time step, which will summarize the input of the entire sentence.}
+
+\item{ Each word in the sentence will correspond to a word embedding vector $x_t \in \mathbb{R}^{300}$. We will initialize $h_0 = \vec{0}$ with length 50, since we want the sentence to be summarized by a vector of length 50. Additionally, we will have two weight matrices: $\mathbb{U} \in \mathbf{R}^{50 \times 300}$ and $\mathbf{W} \in \mathbb{R}^{50 \times 50}$. Finally, we will have a bias vector: $b \in \mathbb{R}^{50}$.
+\\\\
+Then, we can define our simple RNN as:
+$$
+h_t = f(x_t,h_{t-1}) = \tanh (Ux_t + Wh_{t-1} + b)
+$$
+The matrix product $Ux_t$ will transform the input word vector of length 300 into a vector of length 50, while the matrix product $Wh_{t-1}$ takes an input hidden state vector of length 50 and outputs a vector that still has a length of 50. Thus, the vector addition $Ux_t + Wh_{t-1} + b$ adds three vectors each of length 50. Finally, the $\tanh$ is applied element-wise, so our output hidden state vector $h_t$ is a vector of length 50.
+\\\\
+Given a sentence of length 10, after the last input word has been fed into the RNN, we will obtain $h_{10} \in \mathbb{R}^{50}$, which summarizes our sentence. Then, we can feed this vector into a fully-connected layer with 50 input units and 4 output units. Let $V \in \mathbb{R}^{4 \times 50}.$ Then the fully-connected layer computes:
+$$s = V h_{10} $$
+Now $s$, the output of the fully-connected layer, is in $\mathbb{R}^4$, containing a score for each of the four classes. Finally, we can feed this vector into a soft-max function which will give us 4 probabilities, one for each class.  
+}
+
+\end{enumerate}
+
 
 \subsection{Extra credit experiments of fastText}
 
