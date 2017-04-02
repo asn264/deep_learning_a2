@@ -95,7 +95,15 @@ $$
 \section{Variants of Pooling}
 \begin{enumerate}
 \item{Three types of pooling are max-pooling, average-pooling and L-P pooling. Max-pooling is implemented in different dimensions by the MaxPool1d, MaxPool2d and MaxPool3d classes in PyTorch. Average-pooling is implemented in different dimensions by the AvgPool1d, AvgPool2d, and AvgPool3d classes in PyTorch. L-P pooling is implemented in by the LPPool2d module in PyTorch. }
-\item{ SKIPPED: Does this require the output of a full max-pooling operation on an image/matrix, or just one snapshot? }
+\item{  Now we define the mathematical forms of these pooling operations over a given set of input values $x_1,...,x_n$. 
+Max pooling returns the maximum over all inputs:
+$$MaxPool(x_1,...,x_n) = max( x_1, ...,x_n) $$
+Average pooling computes the average of all the inputs:
+$$AveragePool(x_1,...,x_n) = \frac{1}{n} \sum_{i=1}^n x_i$$
+$L-p$ pooling computes the power-average of degree $p$ over the inputs:
+$$LpPool(x_1,...,x_n) = \Bigg( \sum_{i=1}^n x_i^p \Bigg)^{\frac{1}{p}}$$
+
+}
 \item{ Max-pooling essentially applies a maximum function over (sometimes non-overlapping) regions of input matrices. For inputs with several layers of depth, max-pooling is generally applied separately for each layer's matrix. The pooling operation is used to reduce the size of the input matrices in each layer. Applying max-pooling will select only the maximum value in each region of the input matrix, discarding smaller values in each region. This can prevent overfitting by discarding information from the smaller values. In comparison, operations like average-pooling weigh all values in the region equally - and are therefore more conservative in discarding additional information. An average pooling operation in a region with many small values and one large value will have a relatively small output compared to the max pooling operation over the same region, which ignores the overall tendency of values in the region. Therefore the aggressive approach of the max pooling operation can be used as a regularizer. 
 }
 \end{enumerate}
@@ -241,8 +249,69 @@ Now $s$, the output of the fully-connected layer, is in $\mathbb{R}^4$, containi
 \subsection{Extra credit experiments of fastText}
 
 \subsection{Extra credit question}
+Here we propose a new neural architecture for sentence classification. Let $f$ represent a recursive neural net which computes the hidden state $h_t$ of the network at time $t$. Let $w_t$ be the $t$-th word in the input sentence $(w_1,...w_T)$ and $\tilde{x_t}$ be its corresponding one-hot vector. The we define $x_t$ as:
+$$x_t = E \tilde{x_t} $$
+where $E \in \mathbb{R}^{d \times V}$ is the embedding matrix. $V$ is the vocabulary size and length of $\tilde{x_t}$, and $x_t \in \mathbb{R}^d$ is the word embedding corresponding to the input token at $w_t$. 
+\newline
+\newline
+Then we can set $h_0 = \vec{0}$ and compute the hidden state at time $t$ as:
+$$h_t = f(x_t, h_{t-1}) $$ 
+We can recursively compute $h_T$ which will contain a summary of the entire input sentence.
+\newline
+\newline
+Using this RNN we can compute the hidden states $h_1,...,h_{T}$ for each time-step in the input sentence. Next, we line up the vectors so that we have a matrix which has height $T$ and width $d$. 
+\newline
+\newline
+Now we can pass this matrix as input to a convolutional neural network. Specifically, apply several convolution filters of width $d$ to the input matrix. Apply max-pooling over the vector resulting from each convolution. Concatenate the results - the current vector will be as long as the number of convolution filters. Then apply an element-wise non-linearity and pass through a soft-max layer. 
+\newline
+\newline
+This network is a hybrid RNN-CNN network. Traditional RNNs often struggle to appropriately weigh and ``remember" long-term information over many time-steps. Though alternative recurrent modules (like GRUs and LSTMs) and architectures (like attention and memory networks) have been proposed to alleviate this problem, in practice these can have limited success. This hybrid network could potentially alleviate this problem since we incorporate the hidden vectors from each time step in the matrix that is passed as input to the CNN. 
+\newline
+\newline
+Additionally, the RNN is also helpful since it allows us to incorporate location-invariant information about word and phrase meaning in the input. Since RNNs are computed recursively, information that is learned in the beginning of an input sequence can also be applied at the end of the sequence. The CNN does not do this as naturally, since it must first find the right convolution and pooling filters to diffuse information learned across different regions of the input space. Therefore, by using $h_1,...h_T$ for the input matrix to the CNN we can incorporate location-invariant information from the input sentence more easily.
+\newline
+\newline
+Finally, a major downside of CNNs in language applications is that they can only accept fixed-size inputs. Indeed, even in this model, we must fix the size of the input matrix to the CNN and then either clip or pad the sequences of hidden state vectors as necessary. Clipping the sequence of hidden state vectors is especially damaging since it forces us to throw out valuable information from the input sentence. However, since RNNs recursively compute the hidden state at time $t$, $h_t$ contains information from $w_t$ as well as from $w_1, ... w_{t-1}$. Therefore, even if we are forced to throw out some $h_t$ vectors, by keeping the ``older" $h_t$ vectors, we can ensure that some of the information from the ``earlier" vectors is still retained by the network. 
+\newline
+\newline
 
 \section{Language Modeling}
+
+We used RNNs to develop language models for the Penn Treebank (PTB) and Gutenberg datasets. For each dataset, we discuss the tuning process for model hyper-parameters, and also provide quantitative and qualitative analysis of the results. For both datasets, we relied on a greedy procedure for hyper-parameter selection: once a certain hyper-parameter was shown to produce a better model, that hyper-parameter was generally included in all subsequent models. 
+
+\section{Penn Treebank Language Model}
+Initially, we trained a baseline model using the default hyper-parameters of the provided starter code. We detail these hyper-parameters below, since all subsequent models are loosely based off of these. 
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c | c|} 
+ \hline
+RNN Cell & LSTM\\ \hline
+Optimizer & SGD w/ gradient clipping \\ \hline
+Epochs & 6\\ \hline
+Layers & 1\\ \hline
+Embedding Dim. & 50\\ \hline
+Num. Hidden Units & 50\\ \hline
+Parameter Init. & Random Uniform from [0,.1]\\ \hline
+Vocabulary size & 10k\\ \hline
+Shuffle after epoch & No \\ \hline
+\end{tabular}
+\caption{PTB Baseline Hyper-parameters}
+\label{table:1}
+\end{table}
+
+This model achieved a validation perplexity of 145.28. 
+\newline
+\newline
+Next, we explored a range of hyper-parameters to improve the model perplexity. Note that we did not modify the vocabulary size in these experiments since the provided data had already processed the data to a fixed vocabulary size of 150,000, with all out-of-vocabulary tokens replaced with an ``unk" token. 
+\newline
+\newline
+First, we added a second layer to the baseline model. 
+
+\newline
+\newline
+[Analysis]
+
 
 
 
