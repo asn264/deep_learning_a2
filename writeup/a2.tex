@@ -282,6 +282,8 @@ We used RNNs to develop language models for the Penn Treebank (PTB) and Gutenber
 \section*{Penn Treebank Language Model}
 Initially, we trained a baseline model using the default hyper-parameters of the provided starter code. We detail these hyper-parameters below, since all subsequent models are loosely based off of these. 
 
+\subsection*{Model Description and Hyper-parameter Selection}
+
 \begin{table}[h]
 \centering
 \begin{tabular}{|c | c|} 
@@ -296,7 +298,7 @@ Num. Hidden Units & 50\\ \hline
 Parameter Init. & Random Uniform from [0,0.1]\\ \hline
 Vocabulary size & 10k\\ \hline
 Shuffle after epoch & No \\ \hline
-\textbf{Validation Perplexity} &145.28 \\ \hline
+\textbf{Validation Perplexity} &\textbf{147.16} \\ \hline
 \end{tabular}
 \caption{PTB Baseline Hyper-parameters and Result}
 \label{table:1}
@@ -305,10 +307,10 @@ Shuffle after epoch & No \\ \hline
 Next, we explored a range of hyper-parameters to improve the model perplexity. Note that we did not modify the vocabulary size in these experiments since the provided data had already processed the data to a fixed vocabulary size of 150,000, with all out-of-vocabulary tokens replaced with an ``unk" token. 
 \newline
 \newline
-First, we added a second layer to the baseline model. This improved the validation perplexity from 145.28 to 137.56. (Since this parameter improved our validation perplexity, it is included in all subsequent models.) Next we experimented independently with increasing the embedding dimension and the number of hidden units in each layer from 50 to 100. Increasing only the embedding dimension only decreased the validation perplexity from 137.56 to 137.44. Increasing only the hidden state decreased the validation perplexity from 137.56 to 122.83. Increasing both values from 50 to 100 improved the validation perplexity to 122.44. Next, we allowed the model to train for 15 full epochs, giving us a validation perplexity of 122.44. Finally, increasing the number of hidden units to 200 reduced the validation perplexity to 119.59, and subsequently increasing the embedding dimension reduced the validation perplexity to 118.79.
+First, we added a second layer to the baseline model. This improved the validation perplexity from 147.16 to 137.56. (Since this parameter improved our validation perplexity, it is included in all subsequent models.) Next we experimented independently with increasing the embedding dimension and the number of hidden units in each layer from 50 to 100. Increasing only the embedding dimension only decreased the validation perplexity from 137.56 to 137.44. Increasing only the hidden state decreased the validation perplexity from 137.56 to 122.83. Increasing both values from 50 to 100 improved the validation perplexity to 122.44. Next, we allowed the model to train for 15 full epochs, giving us a validation perplexity of 122.44. Finally, increasing the number of hidden units to 200 reduced the validation perplexity to 119.59, and subsequently increasing the embedding dimension reduced the validation perplexity to 118.79.
 \newline
 \newline
-At this stage, we summarize our model as:
+At this stage, we summarize our Intermediate Model as:
 
 \begin{table}[h!]
 \centering
@@ -353,7 +355,8 @@ SGD with NAG: Learning Rate 0.1 and Momentum Coeff. 0.5 &215.71 \\ \hline
 Clearly, these results were worse than our previous models. Though we were not convinced that modifying the optimizer \textit{wasn't} a useful approach, it was too time-consuming to continuing exploring the parameters for more optimizers, since at this point our model was fairly large and required about 2 hours to train for 15 epochs. 
 \newline
 \newline
-In our final experiments, we experimented with regularizing our model, shuffling the training data, and simply making our model bigger. Below, we present the results of applying dropout - which is a form of regularization - on our models. Both experiments were an improvement over our best model thus far, but the model with dropout ``keep" probability 0.3 had a smaller perplexity. Since this model had the lowest perplexity, we included dropout with probability 0.3 in all subsequent experiments
+In our final experiments, we experimented with regularizing our model, shuffling the training data, and simply making our model bigger. Below, we present the results of applying dropout - which is a form of regularization - on our models. Both experiments were an improvement over our best model thus far, but the model with dropout ``keep" probability 0.3 had a smaller perplexity. Since this model had the lowest perplexity, we included dropout with probability 0.3 in all subsequent experiments.
+
 \begin{table}[h!]
 \centering
 \begin{tabular}{|c | c|} 
@@ -366,24 +369,20 @@ Dropout ``Keep" Probability & Validation Perplexity \\ \hline \hline
 \label{table:1}
 \end{table}
 
-Next, rather than shuffle all of the training data, we decided to only shuffle the batches of data. Though this did not have the full effect of shuffling the training data, it was more convenient given the structure of the code. Surprisingly, shuffling the training data increased the validation perplexity to 122.71, so we did not use this in subsequent experiments.
+Next, rather than shuffle all of the training data, we decided to only shuffle the batches of data. Though this did not have the full effect of shuffling the training data, it was more appropriate given the structure of the code. In the provided code, the entire training file is treated as a single document. Therefore, consecutive sentences on separate lines of the file are modeled as having a sequential relationship. For this reason, it was inappropriate to shuffle the lines of the training file, since this fundamentally changes the training corpus, and we can no longer directly compare models. Then the alternative was to read all possible sequences within the corpus into memory, then shuffle the sequences before each epoch, and then process them in batches according to the optimization algorithm. This was likely to slow our training procedure significantly, so we did not pursue this. Surprisingly, using shuffled batches of training data increased the validation perplexity to 122.71, so we did not use this in subsequent experiments.
 \newline
 \newline
-Finally, out of curiosity, we tried train to significantly larger models. In our original experiments, we observed that increasing the number of layers, the embedding dimension and the number of hidden units had the most effect on our models, so we wondered whether increasing these values more would further reduce our perplexity. We present the results of these experiments below.s
-
-\begin{table}[h!]
-\centering
+Finally, out of curiosity, we tried train to significantly larger models. In our original experiments, we observed that increasing the number of layers, the embedding dimension and the number of hidden units had the most effect on our models, so we wondered whether increasing these values more would further reduce our perplexity. As we show below, these experiments did not improve our model perplexity:
+\begin{center}
 \begin{tabular}{|c | c | c | c |} 
 \hline
 Layers & Embedding Dim. & Num. Hidden Units & Validation Perplexity \\ \hline \hline
-x & x & x & x \\ \hline
-x & x & x & x \\ \hline
+3 & 200 & 200 & 121.16 \\ \hline
+3 & 300 & 300 & 122.93 \\ \hline
 \end{tabular}
-\caption{Experiments with Larger Models}
-\label{table:1}
-\end{table}
+\end{center}
 
-Below, we describe the final hyper-parameters of the model with the lowest validation perplexity, and additional report its test perplexity:
+Below, we describe the final hyper-parameters of the model with the lowest validation perplexity, and additionally report its test perplexity:
 \begin{table}[h!]
 \centering
 \begin{tabular}{|c | c|} 
@@ -397,12 +396,16 @@ Num. Hidden Units & 200\\ \hline
 Parameter Init. & Random Uniform from [0,0.1]\\ \hline
 Vocabulary size & 10k\\ \hline
 Shuffle after epoch & No \\ \hline
-\textbf{Validation Perplexity} &\textbf{118.79} \\ \hline
-\textbf{Validation Perplexity} &\textbf{118.79} \\ \hline
+Dropout Keep Prob. & 0.3 \\ \hline
+\textbf{Validation Perplexity} &\textbf{114.54} \\ \hline
+\textbf{Test Perplexity} &\textbf{108.98} \\ \hline
 \end{tabular}
 \caption{PTB Final Model Hyper-parameters and Result}
 \label{table:1}
 \end{table}
 
+\subsection{Qualitative Analysis}
+
+Now, we provide examples of text generated by our models. 
 
 \end{document}
