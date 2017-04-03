@@ -277,10 +277,38 @@ Finally, a major downside of CNNs in language applications is that they can only
 
 \section{Language Modeling}
 
-We used RNNs to develop language models for the Penn Treebank (PTB) and Gutenberg datasets. For each dataset, we discuss the tuning process for model hyper-parameters, and also provide quantitative and qualitative analysis of the results. For both datasets, we relied on a greedy procedure for hyper-parameter selection: once a certain hyper-parameter was shown to produce a better model, that hyper-parameter was generally included in all subsequent models. 
+We used RNNs to develop language models for the Penn Treebank (PTB) and Gutenberg datasets. For each dataset, we discuss the tuning process for model hyper-parameters, and also provide quantitative and qualitative analysis of the results. For both datasets, we relied on a greedy procedure for hyper-parameter selection: once a certain hyper-parameter was shown to produce a lower perplexity on our validation set, that hyper-parameter was generally included in all subsequent models. 
 
-\section{Penn Treebank Language Model}
+\section*{Penn Treebank Language Model}
 Initially, we trained a baseline model using the default hyper-parameters of the provided starter code. We detail these hyper-parameters below, since all subsequent models are loosely based off of these. 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c | c|} 
+ \hline
+RNN Cell & LSTM\\ \hline
+Optimizer & SGD w/ gradient clipping \\ \hline
+Learning Rate & 20 \\ \hline
+Epochs & 6\\ \hline
+Layers & 1\\ \hline
+Embedding Dim. & 50\\ \hline
+Num. Hidden Units & 50\\ \hline
+Parameter Init. & Random Uniform from [0,0.1]\\ \hline
+Vocabulary size & 10k\\ \hline
+Shuffle after epoch & No \\ \hline
+\textbf{Validation Perplexity} &145.28 \\ \hline
+\end{tabular}
+\caption{PTB Baseline Hyper-parameters and Result}
+\label{table:1}
+\end{table}
+
+Next, we explored a range of hyper-parameters to improve the model perplexity. Note that we did not modify the vocabulary size in these experiments since the provided data had already processed the data to a fixed vocabulary size of 150,000, with all out-of-vocabulary tokens replaced with an ``unk" token. 
+\newline
+\newline
+First, we added a second layer to the baseline model. This improved the validation perplexity from 145.28 to 137.56. (Since this parameter improved our validation perplexity, it is included in all subsequent models.) Next we experimented independently with increasing the embedding dimension and the number of hidden units in each layer from 50 to 100. Increasing only the embedding dimension only decreased the validation perplexity from 137.56 to 137.44. Increasing only the hidden state decreased the validation perplexity from 137.56 to 122.83. Increasing both values from 50 to 100 improved the validation perplexity to 122.44. Next, we allowed the model to train for 15 full epochs, giving us a validation perplexity of 122.44. Finally, increasing the number of hidden units to 200 reduced the validation perplexity to 119.59, and subsequently increasing the embedding dimension reduced the validation perplexity to 118.79.
+\newline
+\newline
+At this stage, we summarize our model as:
 
 \begin{table}[h!]
 \centering
@@ -288,31 +316,93 @@ Initially, we trained a baseline model using the default hyper-parameters of the
  \hline
 RNN Cell & LSTM\\ \hline
 Optimizer & SGD w/ gradient clipping \\ \hline
-Epochs & 6\\ \hline
-Layers & 1\\ \hline
-Embedding Dim. & 50\\ \hline
-Num. Hidden Units & 50\\ \hline
-Parameter Init. & Random Uniform from [0,.1]\\ \hline
+Epochs & 15\\ \hline
+Layers & 2\\ \hline
+Embedding Dim. & 200\\ \hline
+Num. Hidden Units & 200\\ \hline
+Parameter Init. & Random Uniform from [0,0.1]\\ \hline
 Vocabulary size & 10k\\ \hline
 Shuffle after epoch & No \\ \hline
+\textbf{Validation Perplexity} &\textbf{118.79} \\ \hline
 \end{tabular}
-\caption{PTB Baseline Hyper-parameters}
+\caption{PTB Intermediate Model Hyper-parameters and Result}
 \label{table:1}
 \end{table}
 
-This model achieved a validation perplexity of 145.28. 
+From these experiments, we conclude that increasing the number of layers, the embedding dimension and the number of hidden units can have a significant impact on perplexity. By modifying these parameters alone, and by allowing our model to train longer, we reduced our perplexity from 145.28 to 118.79.
 \newline
 \newline
-Next, we explored a range of hyper-parameters to improve the model perplexity. Note that we did not modify the vocabulary size in these experiments since the provided data had already processed the data to a fixed vocabulary size of 150,000, with all out-of-vocabulary tokens replaced with an ``unk" token. 
+Next, we experimented with different recurrent units for the network, and different gradient descent procedures for training the network. First, we used GRU cells rather than the default LSTM cells. This resulted in an increase in validation perplexity to 309.98. GRU cells have been known to train more slowly than LSTM cells; we attempted to ``hack" this property by simply increasing the learning rate rather than training the model for longer. However, using GRU cells with a learning rate of 50 further increased our validation perplexity to 661.69. Finally, given our poor results, and since GRUs and LSTMs generally often have comparable performance, we chose to simply use LSTMs.
 \newline
 \newline
-First, we added a second layer to the baseline model. 
+To this point, most of our models had been trained using an initial learning rate of 20, which was annealed over time by a factor of 4 when subsequent epochs showed increased perplexity on the validation set. Next, we explored different optimization methods. In addition to the Adam optimization algorithm, we tested different parametrizations for SGD with Nesterov's Accelerated Gradient (NAG) method. We present the results of these experiments below.
 
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c | c|} 
+ \hline
+Optimization Method & Validation Perplexity \\ \hline \hline
+Adam with Learning Rate 0.001 & ?? \\ \hline
+SGD with NAG: Learning Rate 0.1 and Momentum Coeff. 0.9 & 140.07\\ \hline
+SGD with NAG: Learning Rate 0.05 and Momentum Coeff. 0.5 & 317.17 \\ \hline
+SGD with NAG: Learning Rate 0.1 and Momentum Coeff. 0.5 &215.71 \\ \hline
+\end{tabular}
+\caption{Experiments with Optimizers}
+\label{table:1}
+\end{table}
+Clearly, these results were worse than our previous models. Though we were not convinced that modifying the optimizer \textit{wasn't} a useful approach, it was too time-consuming to continuing exploring the parameters for more optimizers, since at this point our model was fairly large and required about 2 hours to train for 15 epochs. 
 \newline
 \newline
-[Analysis]
+In our final experiments, we experimented with regularizing our model, shuffling the training data, and simply making our model bigger. Below, we present the results of applying dropout - which is a form of regularization - on our models. Both experiments were an improvement over our best model thus far, but the model with dropout ``keep" probability 0.3 had a smaller perplexity. Since this model had the lowest perplexity, we included dropout with probability 0.3 in all subsequent experiments
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c | c|} 
+ \hline
+Dropout ``Keep" Probability & Validation Perplexity \\ \hline \hline
+0.5 & 116.22 \\ \hline
+0.3 & 114.54\\ \hline
+\end{tabular}
+\caption{Experiments with Dropout}
+\label{table:1}
+\end{table}
 
+Next, rather than shuffle all of the training data, we decided to only shuffle the batches of data. Though this did not have the full effect of shuffling the training data, it was more convenient given the structure of the code. Surprisingly, shuffling the training data increased the validation perplexity to 122.71, so we did not use this in subsequent experiments.
+\newline
+\newline
+Finally, out of curiosity, we tried train to significantly larger models. In our original experiments, we observed that increasing the number of layers, the embedding dimension and the number of hidden units had the most effect on our models, so we wondered whether increasing these values more would further reduce our perplexity. We present the results of these experiments below.s
 
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c | c | c | c |} 
+\hline
+Layers & Embedding Dim. & Num. Hidden Units & Validation Perplexity \\ \hline \hline
+x & x & x & x \\ \hline
+x & x & x & x \\ \hline
+\end{tabular}
+\caption{Experiments with Larger Models}
+\label{table:1}
+\end{table}
+
+Below, we describe the final hyper-parameters of the model with the lowest validation perplexity, and additional report its test perplexity:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c | c|} 
+ \hline
+RNN Cell & LSTM\\ \hline
+Optimizer & SGD w/ gradient clipping \\ \hline
+Epochs & 15\\ \hline
+Layers & 2\\ \hline
+Embedding Dim. & 200\\ \hline
+Num. Hidden Units & 200\\ \hline
+Parameter Init. & Random Uniform from [0,0.1]\\ \hline
+Vocabulary size & 10k\\ \hline
+Shuffle after epoch & No \\ \hline
+\textbf{Validation Perplexity} &\textbf{118.79} \\ \hline
+\textbf{Validation Perplexity} &\textbf{118.79} \\ \hline
+\end{tabular}
+\caption{PTB Final Model Hyper-parameters and Result}
+\label{table:1}
+\end{table}
 
 
 \end{document}
