@@ -604,7 +604,9 @@ In order to evaluate our language models of the PTB data, we visualized a sample
   \caption{PTB Baseline Model: Embeddings of a selected word list}
   \label{fig:ptb1}
 \end{figure}
-
+These are reasonable embeddings: the tokens ``a" and ``an" are close to each other, as are ``novel", ``document' and ``books". However, we notice that ``nation" and ``country" are far apart, though they generally have similar meaning. We also notice that the pairs ``a" and ``an" (which are articles) and ``in" and `of" (which are prepositions) are far apart, even though they occupy a similar role in the English language, carrying limited meaning but generally used for syntactic correctness.
+\newline
+\newline
 Next, we show embeddings of the same words according to our final model:
 
 \begin{figure}[H]
@@ -613,8 +615,10 @@ Next, we show embeddings of the same words according to our final model:
   \caption{PTB Final Model: Embeddings of a selected word list}
   \label{fig:ptb1}
 \end{figure}
-
-To better understand our final model on the Gutenberg data, we again visualized the word embeddings in 2-d space using the t-SNE algorithm. As before, we generated a plot of selected word embeddings that would be informative, as well as another plot of random word embeddings.
+Though the list of selected words is small (for visual clarity), we can see that these embeddings are slightly better than those of the baseline. ``A" and ``an" are close together as are ``in" and ``of". Importantly, these pairs are slightly closer together than they were in the baseline embedding. ``Nation" and ``country" are much closer together. However, we note that even these embeddings are not uniformly superior: ``novel", ``document" and ``books" have floated apart. 
+\newline
+\newline
+Next, to better understand our final model on the Gutenberg data, we again visualized the word embeddings in 2-d space using the t-SNE algorithm. As before, we generated a plot of selected word embeddings that would be informative, as well as another plot of random word embeddings.
 
 \begin{figure}[H]
   \includegraphics[width=10cm]{../plots/gutenberg_word_list_embeddings.png}
