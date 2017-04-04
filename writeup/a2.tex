@@ -275,6 +275,45 @@ Now $s$, the output of the fully-connected layer, is in $\mathbb{R}^4$, containi
 
 
 \subsection{Extra credit experiments of fastText}
+fastText is a popular and often-effective model for sentence classification. Let $w_1,...,w_n$ be an input sentence that we would like to classify. Let $\tilde{x}_1,...,\tilde{x}_N \in \mathbb{R}^V$ be n-gram features corresponding to the input sentence, where $V$ is the total number of features and $N$ is the total number of corresponding n-grams that appear in $w_1,...,w_n$. Let $E \in \mathbb{R}^{d \times V}$ be an embedding matrix and define:
+$$x_i = E \tilde{x}_i $$
+Now $x_1,...,x_N \in \mathbb{R}^{d}$ are word embeddings corresponding to the n-gram features of the input sentence. Then compute:
+$$\mu = \frac{1}{n} \sum_{i=1}^n x_i $$
+Now we pass the average of the word embeddings through a linear classifier to compute a score $p = p(y=1 | w_1,...,w_n)$:
+$$ p = W \mu + b $$
+Finally, we train the model to maximize the probability of the correct class, or equivalently, to minimize the negative log-likelihood of the correct class. 
+\newline
+\newline
+There are two main advantages to the fastText model - in addition to strong empirical performance. The first is that it is a fairly straightforward and efficient model, and can have fewer parameters to train compared to a large RNN or ConvNet model. Then second is that, unlike an ConvNet, the fastText model can accept variable-length input. Though many fastText implements only consider fixed windows of inputs, this is not necessary from a mathematical standpoint since we average the embedding vectors of the input sequence.
+\newline
+\newline
+Unlike ConvNet and RNN, fastText takes a bag-of-words/bag-of-n-grams approach to word order, since it averages the embeddings corresponding to all of the n-grams and tokens of the input sentence. In contrast, RNNs traverse input sequences in order, and are therefore attentive to word order. Similarly, ConvNets used for natural language tasks process input sentences by stacking word embedding vectors together in an ordered manner before applying convolution, pooling and fully-connected layers, which is also attentive to word order. With fastText, in order to capture longer-term relationships between far-apart tokens, our best approach is to consider larger-sized n-gram features. However, this can become problematic. As the size of the n-gram grows, the number of possible n-grams also grows and we begin to encounter issues of sparsity, where we have little data associated with many of the large n-grams. This increases our model complexity in a manner that is, at best, prone to overfitting and, at worst, uninformative. For a language modeling task, this can be especially challenging since word order - and specifically long-term dependencies - can indicate crucial information. 
+\newline
+\newline
+We trained a simple fastText language model on Penn Treebank data with the default parameters found in Facebook's fastText implementation for five epochs and a window size of 20. Since the fastText package computes accuracy and not perplexity, we cite this below:
+
+\begin{center}
+\begin{tabular}{ |c|c| } 
+ \hline
+ Validation Accuracy & 8.12 \% \\ \hline
+ Test Accuracy & 8.17 \% \\
+ \hline
+\end{tabular}
+\end{center}
+
+Below, we give some examples of how fastText predicts the missing next word in a sentence compared to what the actual word is:
+
+\begin{center}
+\begin{tabular}{ |c|c|c|} 
+ \hline
+Input & Predicted & Actual \\ \hline
+consumers may want to move their telephones a little closer to the tv \\ set UNK UNK watching abc 's monday & night & UNK \\ \hline
+may want to move their telephones a little closer to the tv set UNK \\ UNK watching abc 's monday night & football & UNK \\ \hline
+want to move their telephones a little closer to the tv set UNK \\ UNK watching abc 's monday night football & can & UNK \\ \hline
+\end{tabular}
+\end{center}
+
+From these experiments, it is clear that we have a very poor language model, since it simply guesses a somewhat common token in the vocabulary for each input. These results also suggest that the model can be insensitive to word order and content, since it guesses the same value for each input even though every pair of inputs differ in at least two tokens. Finally, however, it is worth noting that this was a somewhat small model which was not trained for very long, so we should not make definitive claims about its potential.
 
 \subsection{Extra credit question}
 Here we propose a new neural architecture for sentence classification. Let $f$ represent a recursive neural net which computes the hidden state $h_t$ of the network at time $t$. Let $w_t$ be the $t$-th word in the input sentence $(w_1,...w_T)$ and $\tilde{x_t}$ be its corresponding one-hot vector. The we define $x_t$ as:
@@ -372,7 +411,7 @@ To this point, most of our models had been trained using an initial learning rat
 \begin{tabular}{|c | c|} 
  \hline
 Optimization Method & Validation Perplexity \\ \hline \hline
-Adam with Learning Rate 0.001 & ?? \\ \hline
+Adam with Learning Rate 0.001 & 199.86 \\ \hline
 SGD with NAG: Learning Rate 0.1 and Momentum Coeff. 0.9 & 140.07\\ \hline
 SGD with NAG: Learning Rate 0.05 and Momentum Coeff. 0.5 & 317.17 \\ \hline
 SGD with NAG: Learning Rate 0.1 and Momentum Coeff. 0.5 &215.71 \\ \hline
@@ -426,15 +465,46 @@ Vocabulary size & 10k\\ \hline
 Shuffle after epoch & No \\ \hline
 Dropout Keep Prob. & 0.3 \\ \hline
 \textbf{Validation Perplexity} &\textbf{114.54} \\ \hline
-\textbf{Test Perplexity} &\textbf{108.98} \\ \hline
+\textbf{Test Perplexity} &\textbf{108.93} \\ \hline
 \end{tabular}
 \caption{PTB Final Model Hyper-parameters and Result}
 \label{table:1}
 \end{table}
 
-\subsection{Qualitative Analysis}
+Now, we provide examples of text generated by our models. Below, we provide samples from our baseline model:
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|} \hline
+m. quayle director of the government close $\langle$ eos $\rangle$ \\ \hline
+the dollar stood up N points in the second constitution $\langle$ eos $\rangle$ \\ \hline 
+the tokyo hills general had in the shield interest would be \\ $\langle$ unk $\rangle$ and can oppose a broad version of the river $\langle$ eos $\rangle$ \\ \hline
+by mr. $\langle$ unk $\rangle$ 's house is $\langle$ unk $\rangle$  \\ \hline
+\end{tabular}
+\caption{Language samples for PTB Baseline}
+\label{table:1}
+\end{table}
 
-Now, we provide examples of text generated by our models. 
+From these examples, we can observe that the model emits a fair number of $\langle$ unk $\rangle$ tokens. We can also observe that the model is fairly adept at generating reasonable phrases like: ``director of the government", ``the dollar stood up N points" and ``oppose a broad version of the". (`N' is how numbers are encoded and decoded by the model.) This suggests that our model has converged to some reasonable understanding of when certain tokens are used, and in what local context. In general, these appear to be phrases that could occur reasonably often in the Wall Street Journal, the source of the PTB Corpus. However, almost uniformly, the examples shown above lack any overall meaning. That is, far-apart tokens generated by the model lack cohesion - the model lacks effective long-term dependencies between these tokens.
+\newline
+\newline
+Next, we consider text generated by our final model:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|} \hline
+paramount communications said net rose N N $\langle$ eos $\rangle$ \\ \hline
+it involved in federal court in dallas for december delivery said it agreed \\
+to cut its barriers to shareholders $\langle$ eos $\rangle$ \\ \hline
+although a \$ N million to tax reserves is already capable of punts a \\ 
+tax-loss set around the start of meredith 's third-quarter charge \\
+for a doubling in the next three quarters $\langle$ eos $\rangle$  \\ \hline
+\end{tabular}
+\caption{Language samples for PTB Final Model}
+\label{table:1}
+\end{table}
+
+Surprisingly, though the perplexity of this model is significantly lower than the baseline, the language samples it generated do not seem to be particularly more coherent. In language samples generated by the final model, we observe that the subject is quite consistently related to finance and business, the main focus of the Wall Street Journal. The first example - ``paramount communications said net rose N N" - is a sensible and meaningful, but short, sentence. However, the next two examples, which are at least twice as long, are not so meaningful. In both sentences, though there is some local coherence between words in the form of meaningful phrases - ``involved in federal court in dallas", ``agreed to cut its barriers to shareholders", ``doubling in the next three quarters" - the sentences as a whole lack meaning, perhaps again because the model lacks effective long-term dependencies between tokens. That is to say, the tokens generated later in the sentences are not sufficiently conditioned on those generated very early in the sentence, and therefore are not necessarily relevant to them.
+
 
 
 \section*{Gutenberg Language Model}
@@ -525,20 +595,38 @@ Shuffle after epoch & Yes \\ \hline
 \label{table:1}
 \end{table}
 
-\subsection{Visualizing Embeddings with t-SNE}
-To better understand our final model on the Gutenberg data, we visualized a sample of the word embeddings in 2-d space using t-SNE. As before, we generated a plot of selected word embeddings that would be informative, as well as another plot of random word embeddings.
+\subsection{Word Embeddings}
+In order to evaluate our language models of the PTB data, we visualized a sample of the word embeddings in 2-d space using t-SNE for dimensionality reduction. First, we generate a plot of selected word embeddings from the baseline model:
+
+\begin{figure}[H]
+  \includegraphics[width=10cm]{../plots/PTB_baseline_word_list_embeddings.png}
+  \centering
+  \caption{PTB Baseline Model: Embeddings of a selected word list}
+  \label{fig:ptb1}
+\end{figure}
+
+Next, we show embeddings of the same words according to our final model:
+
+\begin{figure}[H]
+  \includegraphics[width=10cm]{../plots/PTB_dropout_point3_two_layer_200_hidden_200_embeddding_word_list_embeddings.png}
+  \centering
+  \caption{PTB Final Model: Embeddings of a selected word list}
+  \label{fig:ptb1}
+\end{figure}
+
+To better understand our final model on the Gutenberg data, we again visualized the word embeddings in 2-d space using the t-SNE algorithm. As before, we generated a plot of selected word embeddings that would be informative, as well as another plot of random word embeddings.
 
 \begin{figure}[H]
   \includegraphics[width=10cm]{../plots/gutenberg_word_list_embeddings.png}
   \centering
-  \caption{Embeddings of a selected word list}
+  \caption{Gutenberg: Embeddings of a selected word list}
   \label{fig:boat1}
 \end{figure}
 
 \begin{figure}[H]
   \includegraphics[width=10cm]{../plots/gutenberg_random_word_embeddings.png}
   \centering
-  \caption{Embeddings of a randomly selected words}
+  \caption{Gutenberg: Embeddings of a randomly selected words}
   \label{fig:boat1}
 \end{figure}
 
