@@ -541,7 +541,7 @@ Next, we tried changing the learning rate and learning rate decay, with the hope
 Next we experimented with weight initialization in the model. The default behavior were weights sampled from a Uniform distribution in [0,0.1]. We tried using a Normal distribution instead of Uniform as this often increases performance empirically. We tried a Normal distribution with mean 0 and standard deviation 0.1 which improved the validation perplexity to 99.21. We also tried a Normal distribution with mean 0 and standard deviation of 0.01, however this did not work as well as a standard deviation of 0.1. Then, we tried increasing the depth of the model by increasing the number of layers from 1 to 2. This improved the validation perplexity to 98.81. Then, we tried shuffling the batches before each epoch which further improved the perplexity to 97.75.
 \newline
 \newline
-The baseline model used Stochastic Gradient Descent as the optimization method. We tried using the Adam optimizer instead, with a learning rate of .001 which is standard for the Adam optimizer. However, this made the perplexity considerably worse as it was around 124, so it seemed that the Adam optimizer did not work well given the current parameter values or the dataset. Finally, we tried adding dropout on the vertical connections between the layers. We tried dropout probabilities of 0.5 and 0.3, and while dropout with p=0.3 worked better than p=0.5, it did not improve on the current best version of the model. 
+The baseline model used Stochastic Gradient Descent as the optimization method. We tried using the Adam optimizer instead, with a learning rate of .001 which is standard for the Adam optimizer. However, this made the perplexity considerably worse as it was around 124, so it seemed that the Adam optimizer did not work well given the current parameter values or the dataset. Finally, we tried adding dropout on the vertical connections between the layers. We tried dropout probabilities of 0.5 and 0.3, and both significantly improved the validation perplexity of our model. Dropout with p=0.5 improved the validation perplexity to 96.2, while dropout with p=0.3 improved it even further to 94.9.
 \newline
 \newline
 Since models with smaller vocabulary sizes naturally have a smaller perplexity, we did not experiment with the vocabulary size until the very end. We tried having vocabulary sizes of 5,000 and 15,000 with the current version of the best model, which until then had a vocabulary size of 10,000. Since perplexity could not be used to compare them, we generated samples from all three models and used them in a qualitative analysis.
@@ -588,8 +588,9 @@ Num. Hidden Units & 100\\ \hline
 Parameter Init. & Random Normal from [0,0.1]\\ \hline
 Vocabulary size & 10k\\ \hline
 Shuffle after epoch & Yes \\ \hline
-\textbf{Validation Perplexity} &\textbf{97.75} \\ \hline
-\textbf{Test Perplexity} &\textbf{94.5} \\ \hline
+Dropout Keep Prob. & 0.3 \\ \hline
+\textbf{Validation Perplexity} &\textbf{94.9} \\ \hline
+\textbf{Test Perplexity} &\textbf{91.9} \\ \hline
 \end{tabular}
 \caption{Gutenberg Final Model Hyper-parameters and Result}
 \label{table:1}
