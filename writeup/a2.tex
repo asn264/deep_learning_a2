@@ -14,22 +14,22 @@
 \section{Batch Normalization}
 
 \begin{enumerate}
-\item{Let $x_1,...x_m$ be $m$ data points, and let $x_i^k$ be the $k$-th feature of the $i$-th data point. Then we define the mean $\mu_k$, of feature $x^k$, over a mini-batch as:
+\item{Let $x_1,...x_m \in \mathbb{R}^n$ be $m$ data points each with $n$ features. Let $x_i^k$ be the $k$-th feature of the $i$-th data point. Then we define the mean $\mu_k$, of feature $x^k$, over a mini-batch as:
 $$ \mu_k = \frac{1}{m} \sum_{i=1}^m x_i^k$$
 and the variance $\sigma_k^2$ as:
 $$ \sigma_k^2 = \frac{1}{m} \sum_{i=1}^m (x_i^k - \mu_k)^2$$
 
-Now to normalize each feature $x^k$ (for $ 1 \leq k \leq n$) to have zero mean and unit standard deviation, we compute for each mini-batch value of that feature $x_i^k$, for $ 1 \leq i \leq m$: 
+Now to normalize each feature $x^k$ (for $ 1 \leq k \leq n$) to have zero mean and unit standard deviation within each mini-batch $x_1,..,x_m$, we compute $\hat{x}_1^k, ..., \hat{x}_m^k$ as: 
 $$\hat{x}_i^k = \frac{x_i^k - \mu_k}{\sigma_k}$$
 
-Then over all $\hat{x}_i^k$ per $k$, the expected value is $0$:
+Then, over all $\hat{x}_i^k$ (for a fixed feature $k$), the expected value is $0$:
 $$E[\hat{x}_1^k,...,\hat{x}_m^k] = \frac{1}{m} \sum_{i=1}^m \hat{x}_i^k = \frac{1}{m} \sum_{i=1}^m \frac{x_i^k - \mu_k}{\sigma_k} 
 = \frac{1}{m} \frac{1}{\sigma_k} \sum_{i=1}^m (x_i^k - \mu_k) $$
 $$ =  \frac{1}{m} \frac{1}{\sigma_k}  \Bigg[ \Bigg( \sum_{i=1}^m x_i^k \Bigg) - m \cdot \mu_k    \Bigg]
 =  \frac{1}{m} \frac{1}{\sigma_k}  \Bigg[ \sum_{i=1}^m x_i^k  - \sum_{i=1}^m x_i^k  \Bigg] = 0$$
 \newline
 \newline
-Then over all $\hat{x}_i^k$ per $k$, the variance is $1$ since:
+Then over all $\hat{x}_i^k$ (for a fixed feature $k$), the variance is $1$ since:
 $$Var[\hat{x}_1^k,...,\hat{x}_m^k] = \frac{1}{m}\sum_{i=1}^m (\hat{x}_i^k - \hat{\mu}_k)^2 = \frac{1}{m}\sum_{i=1}^m (\hat{x}_i^k - 0)^2 $$
 $$ = \frac{1}{m}\sum_{i=1}^m (\hat{x}_i^k)^2 
 =  \frac{1}{m}\sum_{i=1}^m \Big( \frac{x_i^k- \mu_k}{\sigma_k} \Big)^2 $$
@@ -124,9 +124,9 @@ $$
 \begin{enumerate}
 \item{Three types of pooling are max-pooling, average-pooling and L-P pooling. Max-pooling is implemented in different dimensions by the MaxPool1d, MaxPool2d and MaxPool3d classes in PyTorch. Average-pooling is implemented in different dimensions by the AvgPool1d, AvgPool2d, and AvgPool3d classes in PyTorch. L-P pooling is implemented in by the LPPool2d module in PyTorch. }
 \item{  Now we define the mathematical forms of these pooling operations over a given set of input values $x_1,...,x_n$. 
-Max pooling returns the maximum over all inputs:
+Max-pooling returns the maximum over all inputs:
 $$MaxPool(x_1,...,x_n) = max( x_1, ...,x_n) $$
-Average pooling computes the average of all the inputs:
+Average-pooling computes the average of all the inputs:
 $$AveragePool(x_1,...,x_n) = \frac{1}{n} \sum_{i=1}^n x_i$$
 $L-p$ pooling computes the power-average of degree $p$ over the inputs:
 $$LpPool(x_1,...,x_n) = \Bigg( \sum_{i=1}^n x_i^p \Bigg)^{\frac{1}{p}}$$
@@ -275,7 +275,7 @@ Now $s$, the output of the fully-connected layer, is in $\mathbb{R}^4$, containi
 
 
 \subsection{Extra credit experiments of fastText}
-fastText is a popular and often-effective model for sentence classification. Let $w_1,...,w_n$ be an input sentence that we would like to classify into binary classes, $\{0,1\}$. Let $\tilde{x}_1,...,\tilde{x}_N \in \mathbb{R}^V$ be n-gram features corresponding to the input sentence, where $V$ is the total number of features and $N$ is the total number of corresponding n-grams that appear in $w_1,...,w_n$. Let $E \in \mathbb{R}^{d \times V}$ be an embedding matrix and define:
+fastText is a popular and often-effective model for sentence classification. Let $w_1,...,w_n$ be an input sentence that we would like to classify into binary classes, $\{0,1\}$. Let $\tilde{x}_1,...,\tilde{x}_N \in \mathbb{R}^V$ be one-hot vectors corresponding to n-gram features of the input sentence, where $V$ is the total number of features and $N$ is the total number of n-grams that appear in $w_1,...,w_n$. Let $E \in \mathbb{R}^{d \times V}$ be an embedding matrix and define:
 $$x_i = E \tilde{x}_i $$
 Now $x_1,...,x_N \in \mathbb{R}^{d}$ are word embeddings corresponding to the n-gram features of the input sentence. Then compute:
 $$\mu = \frac{1}{n} \sum_{i=1}^n x_i $$
@@ -284,10 +284,10 @@ $$ p = W \mu + b $$
 Finally, we train the model to maximize the probability of the correct class, or equivalently, to minimize the negative log-likelihood of the correct class. 
 \newline
 \newline
-There are two main advantages to the fastText model - in addition to strong empirical performance. The first is that it is a fairly straightforward and efficient model, and can have fewer parameters to train compared to a large RNN or ConvNet model. Then second is that, unlike an ConvNet, the fastText model can accept variable-length input. Though many fastText implements only consider fixed windows of inputs, this is not necessary from a mathematical standpoint since we average the embedding vectors of the input sequence.
+There are two main advantages to the fastText model - in addition to strong empirical performance. The first is that it is a fairly straightforward and efficient model, and can have fewer parameters to train compared to a large RNN or ConvNet model. Then second is that, unlike an ConvNet, the fastText model can accept variable-length input. Though many fastText implementations only consider fixed windows of inputs, this is not necessary from a mathematical standpoint since we average the embedding vectors of the input sequence.
 \newline
 \newline
-Unlike ConvNet and RNN, fastText takes a bag-of-words/bag-of-n-grams approach to word order, since it averages the embeddings corresponding to all of the n-grams and tokens of the input sentence. In contrast, RNNs traverse input sequences in order, and are therefore attentive to word order. Similarly, ConvNets used for natural language tasks process input sentences by stacking word embedding vectors together in an ordered manner before applying convolution, pooling and fully-connected layers, which is also attentive to word order. With fastText, in order to capture longer-term relationships between far-apart tokens, our best approach is to consider larger-sized n-gram features. However, this can become problematic. As the size of the n-gram grows, the number of possible n-grams also grows and we begin to encounter issues of sparsity, where we have little data associated with many of the large n-grams. This increases our model complexity in a manner that is, at best, prone to overfitting and, at worst, uninformative. For a language modeling task, this can be especially challenging since word order - and specifically long-term dependencies - can indicate crucial information. 
+Unlike ConvNet and RNN, fastText takes a bag-of-words/bag-of-n-grams approach to word order, since it averages the embeddings corresponding to all of the n-grams and tokens of the input sentence. In contrast, RNNs traverse input sequences in order, and are therefore attentive to word order. Similarly, ConvNets used for natural language tasks process input sentences by stacking word embedding vectors together in an ordered manner before applying convolution, pooling and fully-connected layers, which is also attentive to word order. With fastText, in order to capture word order and longer-term relationships between non-adjacent tokens, our best approach is to consider larger-sized n-gram features. However, this can become problematic. As the size of the n-gram grows, the number of possible n-grams also grows and we begin to encounter issues of sparsity, where we have little data associated with many of the large n-grams. This increases our model complexity in a manner that is, at best, prone to overfitting and, at worst, uninformative. For a language modeling task, this can be especially challenging since word order - and specifically long-term dependencies - can indicate crucial information. 
 \newline
 \newline
 We trained a simple fastText language model on Penn Treebank data with the default parameters found in Facebook's fastText implementation for five epochs and a window size of 20. Since the fastText package computes accuracy and not perplexity, we cite this below:
@@ -307,9 +307,9 @@ Below, we give some examples of how fastText predicts the missing next word in a
 \begin{tabular}{ |c|c|c|} 
  \hline
 Input & Predicted & Actual \\ \hline
-consumers may want to move their telephones a little closer to the tv \\ set UNK UNK watching abc 's monday & night & UNK \\ \hline
-may want to move their telephones a little closer to the tv set UNK \\ UNK watching abc 's monday night & football & UNK \\ \hline
-want to move their telephones a little closer to the tv set UNK \\ UNK watching abc 's monday night football & can & UNK \\ \hline
+consumers may want to move their telephones a little closer to the tv \\ set $\langle$ unk $\rangle$ watching abc 's monday & night & $\langle$ unk $\rangle$ \\ \hline
+may want to move their telephones a little closer to the tv set $\langle$ unk $\rangle$ \\ $\langle$ unk $\rangle$ watching abc 's monday night & football & $\langle$ unk $\rangle$ \\ \hline
+want to move their telephones a little closer to the tv set $\langle$ unk $\rangle$ \\ $\langle$ unk $\rangle$ watching abc 's monday night football & can & $\langle$ unk $\rangle$ \\ \hline
 \end{tabular}
 \end{center}
 
@@ -374,7 +374,7 @@ Shuffle after epoch & No \\ \hline
 Next, we explored a range of hyper-parameters to improve the model perplexity. Note that we did not modify the vocabulary size in these experiments since the provided data had already processed the data to a fixed vocabulary size of 10,000, with all out-of-vocabulary tokens replaced with an ``unk" token. 
 \newline
 \newline
-First, we added a second layer to the baseline model. This improved the validation perplexity from 147.16 to 137.56. (Since this parameter improved our validation perplexity, it is included in all subsequent models.) Next we experimented independently with increasing the embedding dimension and the number of hidden units in each layer from 50 to 100. Increasing only the embedding dimension only decreased the validation perplexity from 137.56 to 137.44. Increasing only the hidden state decreased the validation perplexity from 137.56 to 122.83. Increasing both values from 50 to 100 improved the validation perplexity to 122.44. Next, we allowed the model to train for 15 full epochs, giving us a validation perplexity of 122.44. Finally, increasing the number of hidden units to 200 reduced the validation perplexity to 119.59, and subsequently increasing the embedding dimension reduced the validation perplexity to 118.79.
+First, we added a second layer to the baseline model. This improved the validation perplexity from 147.16 to 137.56. (Since this parameter improved our validation perplexity, it is included in all subsequent models.) Next we experimented independently with increasing the embedding dimension and the number of hidden units in each layer from 50 to 100. Increasing only the embedding dimension only decreased the validation perplexity from 137.56 to 137.44. Increasing only the hidden state decreased the validation perplexity from 137.56 to 122.83. Increasing both values from 50 to 100 improved the validation perplexity to 122.77. Next, we allowed the model to train for 15 full epochs, giving us a validation perplexity of 122.44. Finally, increasing the number of hidden units to 200 reduced the validation perplexity to 119.59, and subsequently increasing the embedding dimension reduced the validation perplexity to 118.79.
 \newline
 \newline
 At this stage, we summarize our Intermediate Model as:
@@ -401,7 +401,10 @@ Shuffle after epoch & No \\ \hline
 From these experiments, we conclude that increasing the number of layers, the embedding dimension and the number of hidden units can have a significant impact on perplexity. By modifying these parameters alone, and by allowing our model to train longer, we reduced our perplexity from 145.28 to 118.79.
 \newline
 \newline
-Next, we experimented with different recurrent units for the network, and different gradient descent procedures for training the network. First, we used GRU cells rather than the default LSTM cells. This resulted in an increase in validation perplexity to 309.98. GRU cells have been known to train more slowly than LSTM cells; we attempted to ``hack" this property by simply increasing the learning rate rather than training the model for longer. However, using GRU cells with a learning rate of 50 further increased our validation perplexity to 661.69. Finally, given our poor results, and since GRUs and LSTMs generally often have comparable performance, we chose to simply use LSTMs.
+Next, we experimented with different initialization techniques, different recurrent units for the network, and different gradient descent procedures for training the network. Originally, we initialized our models using weights drawn from a uniform distribution $[0,0.1]$. Instead, we trained a model with weights randomly drawn from a normal distribution with $\mu=0$ and $\sigma^2 = 0.1$, but this increased our perplexity to 122.67.
+\newline
+\newline
+Next, we used GRU cells rather than the default LSTM cells. This resulted in an increase in validation perplexity to 309.98. GRU cells have been known to train more slowly than LSTM cells; we attempted to ``hack" this property by simply increasing the learning rate rather than training the model for longer. However, using GRU cells with a learning rate of 50 further increased our validation perplexity to 661.69. Finally, given our poor results, and since GRUs and LSTMs generally often have comparable performance, we chose to simply use LSTMs.
 \newline
 \newline
 To this point, most of our models had been trained using an initial learning rate of 20, which was annealed over time by a factor of 4 when subsequent epochs showed increased perplexity on the validation set. Next, we explored different optimization methods. In addition to the Adam optimization algorithm, we tested different parametrizations for SGD with Nesterov's Accelerated Gradient (NAG) method. We present the results of these experiments below.
@@ -429,14 +432,14 @@ In our final experiments, we experimented with regularizing our model, shuffling
 \begin{tabular}{|c | c|} 
  \hline
 Dropout ``Keep" Probability & Validation Perplexity \\ \hline \hline
-0.5 & 116.22 \\ \hline
-0.3 & 114.54\\ \hline
+0.5 & 107.48 \\ \hline
+0.3 & 106.29\\ \hline
 \end{tabular}
 \caption{Experiments with Dropout}
 \label{table:1}
 \end{table}
 
-Next, rather than shuffle all of the training data, we decided to only shuffle the batches of data. Though this did not have the full effect of shuffling the training data, it was more appropriate given the structure of the code. In the provided code, the entire training file is treated as a single document. Therefore, consecutive sentences on separate lines of the file are modeled as having a sequential relationship. For this reason, it was inappropriate to shuffle the lines of the training file, since this fundamentally changes the training corpus, and we can no longer directly compare models. Then the alternative was to read all possible sequences within the corpus into memory, then shuffle the sequences before each epoch, and then process them in batches according to the optimization algorithm. This was likely to slow our training procedure significantly, so we did not pursue this. Surprisingly, using shuffled batches of training data increased the validation perplexity to 122.71, so we did not use this in subsequent experiments.
+Next, rather than shuffle all of the training data, we decided to only shuffle the batches of data. Though this did not have the full effect of shuffling the training data, it was more appropriate given the structure of the code. In the provided code, the entire training file is treated as a single document. Therefore, consecutive sentences on separate lines of the file are modeled as having a sequential relationship. For this reason, it was inappropriate to shuffle the lines of the training file, since this fundamentally changes the training corpus, and we can no longer directly compare models. Then the alternative was to read all possible sequences within the corpus into memory, then shuffle the sequences before each epoch, and then process them in batches according to the optimization algorithm. This was likely to slow our training procedure significantly, so we did not pursue this. Surprisingly, using shuffled batches of training data increased the validation perplexity to 115.48, so we did not use this in subsequent experiments.
 \newline
 \newline
 Finally, out of curiosity, we tried train to significantly larger models. In our original experiments, we observed that increasing the number of layers, the embedding dimension and the number of hidden units had the most effect on our models, so we wondered whether increasing these values more would further reduce our perplexity. As we show below, these experiments did not improve our model perplexity:
@@ -444,8 +447,8 @@ Finally, out of curiosity, we tried train to significantly larger models. In our
 \begin{tabular}{|c | c | c | c |} 
 \hline
 Layers & Embedding Dim. & Num. Hidden Units & Validation Perplexity \\ \hline \hline
-3 & 200 & 200 & 121.16 \\ \hline
-3 & 300 & 300 & 122.93 \\ \hline
+3 & 200 & 200 & 112.65\\ \hline
+3 & 300 & 300 &  114.51\\ \hline
 \end{tabular}
 \end{center}
 
@@ -464,8 +467,8 @@ Parameter Init. & Random Uniform from [0,0.1]\\ \hline
 Vocabulary size & 10k\\ \hline
 Shuffle after epoch & No \\ \hline
 Dropout Keep Prob. & 0.3 \\ \hline
-\textbf{Validation Perplexity} &\textbf{114.54} \\ \hline
-\textbf{Test Perplexity} &\textbf{108.93} \\ \hline
+\textbf{Validation Perplexity} &\textbf{106.29} \\ \hline
+\textbf{Test Perplexity} &\textbf{101.66} \\ \hline
 \end{tabular}
 \caption{PTB Final Model Hyper-parameters and Result}
 \label{table:1}
@@ -492,20 +495,21 @@ Next, we consider text generated by our final model:
 \begin{table}[h]
 \centering
 \begin{tabular}{|c|} \hline
-paramount communications said net rose N N $\langle$ eos $\rangle$ \\ \hline
-it involved in federal court in dallas for december delivery said it agreed \\
-to cut its barriers to shareholders $\langle$ eos $\rangle$ \\ \hline
-although a \$ N million to tax reserves is already capable of punts a \\ 
-tax-loss set around the start of meredith 's third-quarter charge \\
-for a doubling in the next three quarters $\langle$ eos $\rangle$  \\ \hline
+pretax profit was \$ N million from \$ N million a year ago $\langle$ eos $\rangle$ \\ \hline
+they are now happy to buy or sell $\langle$ unk $\rangle$ operations $\langle$ eos $\rangle$ \\ \hline
+the restructuring which has been sold in bear stearns meanwhile was $\langle$ unk $\rangle$ \\
+an agreement at a shareholder meeting with a defense \\
+publishing firm putting any penalty elsewhere $\langle$ eos $\rangle$ \\ \hline
+air field investment management plc said it had agreed deposits so far a \\
+year ago because it operates a $\langle$ unk $\rangle$ basis of color \\
+switches by eastman ab oil and cable security and canadian \\
+forest mr. anderson $\langle$ eos $\rangle$ \\ \hline
 \end{tabular}
 \caption{Language samples for PTB Final Model}
 \label{table:1}
 \end{table}
 
-Surprisingly, though the perplexity of this model is significantly lower than the baseline, the language samples it generated do not seem to be particularly more coherent. In language samples generated by the final model, we observe that the subject is quite consistently related to finance and business, the main focus of the Wall Street Journal. The first example - ``paramount communications said net rose N N" - is a sensible and meaningful, but short, sentence. However, the next two examples, which are at least twice as long, are not so meaningful. In both sentences, though there is some local coherence between words in the form of meaningful phrases - ``involved in federal court in dallas", ``agreed to cut its barriers to shareholders", ``doubling in the next three quarters" - the sentences as a whole lack meaning, perhaps again because the model lacks effective long-term dependencies between tokens. That is to say, the tokens generated later in the sentences are not sufficiently conditioned on those generated very early in the sentence, and therefore are not necessarily relevant to them.
-
-
+As we expected, these sentences are more coherent and meaningful than those above. In particular, this model often generates shorter sentences - like the first two above - which are grammatically correct and explicit in meaning. In fact, these sentences could have been lifted from the corpus itself. We also note that the sentences generated by the model are uniformly related to business and finance. Finally, we note that longer sentences - like the last two above - often lack any overall meaning. In both sentences, though there is some local coherence between words in the form of meaningful phrases - ``an agreement at a shareholder meeting", ``investment management plc said it had agreed" -  the sentences as a whole lack meaning, perhaps again because the model lacks effective long-term dependencies between tokens. That is to say, the tokens generated later in the sentences are not sufficiently conditioned on those generated very early in the sentence, and therefore are not necessarily relevant to them.
 
 \section*{Gutenberg Language Model}
 For our analysis of a second dataset, we used the Gutenberg data provided. However, since this dataset was 3 times as large as the Penn Treebank data, we downsampled the dataset to $\sim$800K training examples from $\sim$2.5M training examples. As with the Penn Treebank data, our exploration process was done in a greedy manner - once we found an optimal parameter value for a specific parameter, that value was used in subsequent experiments while exploring other parameters. Our baseline model used the default parameters of the provided starter code, and are summarized below:
@@ -535,17 +539,17 @@ Shuffle after epoch & No \\ \hline
 In our parameter exploration process, we first modified the word embedding and hidden state sizes. Since both dimensions were initially 50, we tried setting each to 25 and 100, while the other was held constant at 50. Of these, having an embedding size of 25 while keeping hidden state size at 50 improved validation perplexity to 104.04, while having a hidden state size of 100 while keeping the embedding size at 50 improved the perplexity to 100.06. Since increasing the hidden state size to 100 resulted in the best improvement, we tried varying the embedding dimension while keeping the hidden state size at 100. Embedding dimensions of 25 and 100 were tested, but neither decreased the validation perplexity any further. Thus, the optimal parameters thus far were a hidden state size of 100 and an embedding size of 50. 
 \newline
 \newline
-Next, we tried changing the learning rate and learning rate decay, with the hope that a learning rate that decays less quickly might learn better in later epochs. The default learning rate was 20 and the default decay was 4, so we tried changing the decay to 2 instead of 4, and then also tried changing both the learning rate to 10 and the decay to 2. However, neither modification improved the model. We also tried changing the LSTM cells to GRU cells instead, however this did not improve the model which was expected. Since GRU cells have less parameters than LSTM cells, they often can converge more quickly than LSTM cells but rarely outperform LSTM models that have been run for the same number of epochs.
+Next, we tried changing the learning rate and learning rate decay, with the hope that a learning rate that decays less quickly might learn better in later epochs. The default learning rate was 20 and the default decay was 4, so we tried changing the decay to 2 instead of 4, and then also tried changing both the learning rate to 10 and the decay to 2. However, neither modification improved the model. We also tried changing the LSTM cells to GRU cells. However this did not improve the model which was expected. Since GRU cells have less parameters than LSTM cells, they often can converge more quickly than LSTM cells but rarely outperform LSTM models that have been run for the same number of epochs.
 \newline
 \newline
 Next we experimented with weight initialization in the model. The default behavior were weights sampled from a Uniform distribution in [0,0.1]. We tried using a Normal distribution instead of Uniform as this often increases performance empirically. We tried a Normal distribution with mean 0 and standard deviation 0.1 which improved the validation perplexity to 99.21. We also tried a Normal distribution with mean 0 and standard deviation of 0.01, however this did not work as well as a standard deviation of 0.1. Then, we tried increasing the depth of the model by increasing the number of layers from 1 to 2. This improved the validation perplexity to 98.81. Then, we tried shuffling the batches before each epoch which further improved the perplexity to 97.75.
 \newline
 \newline
-The baseline model used Stochastic Gradient Descent as the optimization method. We tried using the Adam optimizer instead, with a learning rate of .001 which is standard for the Adam optimizer. However, this made the perplexity considerably worse as it was around 124, so it seemed that the Adam optimizer did not work well given the current parameter values or the dataset. Finally, we tried adding dropout on the vertical connections between the layers. We tried dropout probabilities of 0.5 and 0.3, and both significantly improved the validation perplexity of our model. Dropout with p=0.5 improved the validation perplexity to 96.2, while dropout with p=0.3 improved it even further to 94.9.
+The baseline model used Stochastic Gradient Descent as the optimization method. We tried using the Adam optimizer instead, with a learning rate of .001 which is standard for the Adam optimizer. However, this increased the perplexity to about 124, so it seemed that the Adam optimizer did not work well given the current parameter values or the dataset. Finally, we tried adding dropout on the vertical connections between the layers. We tried dropout probabilities of 0.5 and 0.3, and both significantly improved the validation perplexity of our model. Dropout with ``keep" probability 0.5 improved the validation perplexity to 96.2, while dropout with ``keep" probability 0.3 improved it even further to 94.9.
 \newline
 \newline
-Since models with smaller vocabulary sizes naturally have a smaller perplexity, we did not experiment with the vocabulary size until the very end. We tried having vocabulary sizes of 5,000 and 15,000 with the current version of the best model, which until then had a vocabulary size of 10,000. Since perplexity could not be used to compare them, we generated samples from all three models and used them in a qualitative analysis.
-Below are samples for each version that we thought were representative of the model:
+Since models with smaller vocabulary sizes naturally have a smaller perplexity, we did not experiment with the vocabulary size until the very end. Until now, we had set our vocabulary size to 10,000. Next, we tried variations of the data with vocabulary sizes of 5,000 and 15,000. Since perplexity could not be used to compare them, we generated samples from all three models and used them in a qualitative analysis.
+Below are model samples from each vocabulary size that we thought were representative of the model:
 
 \begin{table}[h]
 \centering
@@ -608,7 +612,7 @@ In order to evaluate our language models of the PTB data, we visualized a sample
   \caption{PTB Baseline Model: Embeddings of a selected word list}
   \label{fig:ptb1}
 \end{figure}
-These are reasonable embeddings: the tokens ``a" and ``an" are close to each other, as are ``novel", ``document' and ``books". However, we notice that ``nation" and ``country" are far apart, though they generally have similar meaning. We also notice that the pairs ``a" and ``an" (which are articles) and ``in" and `of" (which are prepositions) are far apart, even though they occupy a similar role in the English language, carrying limited meaning but generally used for syntactic correctness.
+These are reasonable embeddings: the tokens ``a" and ``an" are close to each other, as are ``novel", ``document' and ``books". However, we notice that ``nation" and ``country" are far apart, though they generally have similar meaning. We also notice that the pairs ``a" and ``an" (which are articles) and ``in" and ``of" (which are prepositions) are far apart, even though they occupy a similar role in the English language, carrying limited meaning but generally used for syntactic correctness.
 \newline
 \newline
 Next, we show embeddings of the same words according to our final model:
@@ -638,11 +642,11 @@ Next, to better understand our final model on the Gutenberg data, we again visua
   \label{fig:boat1}
 \end{figure}
 
-In the selected word list plot, we can see that there are some relationships in language that are captured. 'nation' and 'country' are close, and 'documentary', 'books', and 'novel' are also close to each other. However, we would expect 'a' and 'an' to be very close to each other, and they are not in our embedding space. Also, 'job' is closer to 'country' and 'documentary' than it is to 'work', although part-of-speech may be playing a part here as the first 3 are all nouns while 'work' more commonly appears as a verb than a noun. 
+In the selected word list plot, we can see that there are some relationships in language that are captured. ``Nation" and ``country" are close, and ``documentary", ``books" and ``novel" are also close to each other. However, we would expect ``a" and ``an" to be very close to each other, and they are not in our embedding space. Also, ``job" is closer to ``country" and ``documentary" than it is to ``work", although part-of-speech may be playing a part here as the first three are all nouns while ``work" more commonly appears as a verb than a noun. 
 \newline
 \newline
-In the plot of random word embeddings, it is quite hard to assess whether the model is learning well or not. It seems that a random selection of words populate the space rather evenly and since no two words are very close in meaning, it is hard to assess the model. However, we can see that 'overthrow' and 'rule' are close to each other, and they are often used in similar contexts even though they have somewhat opposite meanings.
+In the plot of random word embeddings, it is quite hard to assess whether the model is learning well or not. It seems that a random selection of words populate the space rather evenly and since no two words are very close in meaning, it is hard to assess the model. However, we can see that ``overthrow" and ``rule" are close to each other, and they are often used in similar contexts even though they have somewhat opposite meanings.
 \newline
 \newline
-In general, it seems that our model has learned some of the relationships and dependencies in language but there is still room for improvement. With more time and computing power, we would have liked to try training a deeper model (3+ layers) with more of the training data and possibly larger embedding and hidden state sizes to see if a more powerful model can be trained.  
+In general, it seems that our model has learned some of the relationships and dependencies in language but there is still room for improvement. With more time and computing power, we would have liked to try training a deeper model (3+ layers) on the Gutenberg dataset, using more of the training data and possibly larger embedding and hidden state sizes to see if a more powerful model can be trained.  
 \end{document}
