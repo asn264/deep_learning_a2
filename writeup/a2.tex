@@ -76,9 +76,9 @@ $$\frac{\delta E}{\delta \beta^k} = \sum_{i=1}^m \frac{\delta E}{\delta y_i^k} $
 \begin{enumerate}
 \item{In general, with a square input of length $I$, a square kernel of length $k$, zero padding of size $p$ on both sides, and a stride of $s$, we can calculate the output of convolution to be a square with length $(I-k+2p)/s + 1$. Assuming a stride of 1 and no zero padding, we will get a $3 \times 3$ matrix of $9$ values in the given problem.}
 \item{
-As stated in part 1, the output of forward propagating the image over the kernel will be a $3 \times 3$ matrix, whose values we can denote as $x_{i,j}$ for $i,j = 0,1,2$. In this problem, we consider the formulation of a discrete convolution where the kernel is not flipped, since both versions are equivalent when training a CNN. If we write the input image as $I_{i,j}$ for $i,j=0,\dots,4$ and the kernel as $k_{i,j}$ for $i,j = 0,1,2$, then we can express each value of the output in terms of the kernel and the input as follows:
+As stated in part 1, the output of forward propagating the image over the kernel will be a $3 \times 3$ matrix, whose values we can denote as $x_{i,j}$ for $i,j \in \{0,1,2 \}$. In this problem, we consider the formulation of a discrete convolution where the kernel is not flipped, since both versions are equivalent when training a CNN. If we write the input image as $y_{i,j}$ for $i,j \in \{ 0,\dots,4\}$ and the kernel as $k_{i,j}$ for $i,j \in \{0,1,2 \}$, then we can express each value of the output in terms of the kernel and the input as follows:
 $$
-x_{i,j} = \sum_{m=0}^2 \sum_{n=0}^2 I_{i+m,j+n} \cdot k_{m,n}
+x_{ij} = \sum_{m=0}^2 \sum_{n=0}^2 y_{i+m,j+n} \cdot k_{m,n}
 $$
 The result of this convolution is:
 
@@ -91,10 +91,43 @@ $$
 $$
 
  }
-\item{If we view our convolutional neural network as a feed-forward network, then our $5 \times 5$ input matrix would correspond to a layer in the feed-forward network with 25 units. The next layer would be our output from part 2, which we found has 9 units. Then, the weights connecting the two layers would be shared so that there are only 9 unique values of the weights, one for each kernel value. In this way, we can explicitly reconstruct the convolution formula above by viewing the value of a unit in the output layer as a sum of input units connected to that unit, scaled by the correspond weights of the connections. 
+\item{If we view our convolutional neural network as a feed-forward network, then our $5 \times 5$ input matrix would correspond to a layer in the feed-forward network with 25 units. The next layer would be our result from part 2, which we showed has 9 units. Then, the weights connecting the two layers would be shared so that there are only 9 unique values of the weights, one for each kernel value. In this way, we can explicitly reconstruct the convolution formula above by viewing the value of a unit in the output layer as a sum of input units connected to that unit, scaled by the correspond weights of the connections. 
 \newline
 \newline
-Now, let us consider the standard backpropagation method of a feed-forward network. Let $\delta_{i,j}^{l+1}$ for $i,j=0,1,2$ denote the gradients backpropagated from the layer above, and $\delta_{i,j}^{l}$ for $i,j=0,\dots,4$ denote the gradients backpropagated out of this input layer. By simply computing the backwards pass of the feed-forward network representing our CNN, we can see that the matrix of gradients out of this layer is equal to the convolution of the gradients from the layer above and kernel rotated $180^{o}$. The rotation of our initial kernel gives us the rotated kernel, $k^{*}$:
+Now, let us consider the standard back-propagation method of a feed-forward network. Let $E$ be the error function of the network. Let $\frac{\delta E}{\delta x_{ij}}$ be the error propagated through network to unit $x_{ij}$. We would like to compute $\frac{\delta E}{\delta y_{ij}}$ for all $i, j$. Therefore, for a fixed $y_{ij}$, we would like to determine which $x_{ij}$ units are dependent on $y_{ij}$. In particular, we can examine the formula for $x_{ij}$ and observe that the following values are dependent on $y_{ij}$:
+$$\{ x_{ij}, x_{i-1,j}, x_{i-2,j}, ..., x_{i-2,j-2} \} $$
+That is:
+$$\{ x_{i - a, j-b} | a, b = 0, 1, 2 \} $$
+Therefore we can write:
+$$ \frac{\delta E}{\delta y_{ij}} = \sum_{a=0}^2 \sum_{b=0}^2 \frac{\delta E}{\delta x_{i-a,j-b}} \frac{\delta x_{i-a,j-b}}{\delta y_{ij}}$$
+Now, let us further examine the term $\frac{\delta x_{i-a,j-b}}{\delta y_{ij}}$. We know that:
+$$ \frac{\delta x_{i-a,j-b}}{\delta y_{ij}} = \frac{\delta}{\delta y_{ij}} \Bigg( \sum_{m=0}^2 \sum_{n=0}^2 y_{i-a+m,j-b+n} \cdot k_{m,n} \Bigg) $$ 
+Then the summation above involves $y_{ij}$ only for the term where $m=a$ and $n=b$. It follows that:
+$$ \frac{\delta x_{i-a,j-b}}{\delta y_{ij}} = k_{ab}$$ 
+Finally, we see that:
+$$ \frac{\delta E}{\delta y_{ij}} = \sum_{a=0}^2 \sum_{b=0}^2 \frac{\delta E}{\delta x_{i-a,j-b}} k_{ab}$$
+In the problem statement, we are told that $\frac{\delta E }{ \delta x_{ij}} = 1$ for all $i, j$. In matrix form:
+$$ \begin{bmatrix}
+1 & 1 & 1 \\
+1 & 1 & 1 \\
+1 & 1 & 1 \\
+\end{bmatrix}
+$$
+\newline
+\newline
+Notice, however, that we cannot define $\frac{\delta E}{\delta y_{ij}}$ according to the formula above if $i < 2$ or $j < 2$. Therefore, the gradient matrix from the layer above will need zero-padding in order to apply a convolution properly, as our output needs to be a $5 \times 5$ matrix containing all of the $\frac{ \delta E}{\delta y_{ij}}$. By using padding of size 2 on each side, our gradient matrix from the layer above will be a $7 \times 7$ matrix, so the output of passing the $3 \times 3$ kernel over this gradient matrix will be the $5 \times 5$ gradient matrix of $\frac{ \delta E}{\delta y_{ij}}$ values from the input layer. So we must pad the matrix above as:
+$$ \begin{bmatrix} 
+0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 1 & 1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{bmatrix} $$
+\newline
+\newline
+Now, we can apply the expression for $ \frac{\delta E}{\delta y_{ij}} $ above. In fact, by computation we can see that this expression looks exactly like a convolution over the padding matrix above with the kernel matrix rotated $180^{o}$. The rotation of our initial kernel gives us the rotated kernel, $k^{*}$:
 $$
 \begin{bmatrix}
 2 & 0 & 5 \\
@@ -102,12 +135,18 @@ $$
 3 & 8 & 3 
 \end{bmatrix}
 $$
-Now, the gradient matrix from the layer above will need zero-padding in order to apply a convolution properly, as our output needs to be a $5 \times 5$ matrix. By using padding of size 2 on each side, our gradient matrix from the layer above will be a $7 \times 7$ matrix, so the output of passing the $3 \times 3$ kernel over this gradient matrix will be the $5 \times 5$ gradient matrix backpropagated from the input layer.
-Now using the same gradient formula as above, we have
-$$
-\delta_{i,j}^{l}= \sum_{m=0}^2 \sum_{n=0}^2 \delta_{i+m,j+n}^{l+1} \cdot k_{m,n}^{*}
-$$
-This convolution computation results in the following gradient matrix being backpropogated out of the input layer:
+
+
+
+\begin{comment}
+Let $\delta_{i,j}^{l+1}$ for $i,j=0,1,2$ denote the gradients back-propagated from the layer above, and $\delta_{i,j}^{l}$ for $i,j=0,\dots,4$ denote the gradients back-propagated out of this input layer. By simply computing the backwards pass of the feed-forward network representing our CNN, we can see that the matrix of gradients out of this layer is equal to the convolution of the gradients from the layer above and kernel rotated $180^{o}$. 
+\end{comment}
+
+
+Now, we can say:
+$$ \frac{\delta E}{\delta y_{ij}} = \sum_{a=0}^2 \sum_{b=0}^2 \frac{\delta E}{\delta x_{i,j}} k^*_{ab}$$
+
+This convolution computation results in the following gradient matrix being back-propagated out of the input layer:
 $$
 \begin{bmatrix}
 3 & 11 & 14 & 11 & 3 \\
