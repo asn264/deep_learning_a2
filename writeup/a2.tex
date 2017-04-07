@@ -127,7 +127,7 @@ $$ \begin{bmatrix}
 \end{bmatrix} $$
 \newline
 \newline
-Now, we can apply the expression for $ \frac{\delta E}{\delta y_{ij}} $ above. In fact, by computation we can see that this expression looks exactly like a convolution over the padding matrix above with the kernel matrix rotated $180^{o}$. The rotation of our initial kernel gives us the rotated kernel, $k^{*}$:
+Now, we can apply the expression for $ \frac{\delta E}{\delta y_{ij}} $ above. In fact, by computation we can see that this expression looks exactly like a convolution over the padded matrix above with the original kernel matrix rotated $180^{o}$. The rotation of our initial kernel gives us the rotated kernel, $k^{*}$:
 $$
 \begin{bmatrix}
 2 & 0 & 5 \\
@@ -345,7 +345,7 @@ Below, we give some examples of how fastText predicts the missing next word in a
 \begin{center}
 \begin{tabular}{ |c|c|c|} 
  \hline
-Input & Predicted & Actual \\ \hline
+Input & Actual & Predicted \\ \hline
 consumers may want to move their telephones a little closer to the tv \\ set $\langle$ unk $\rangle$ watching abc 's monday & night & $\langle$ unk $\rangle$ \\ \hline
 may want to move their telephones a little closer to the tv set $\langle$ unk $\rangle$ \\ $\langle$ unk $\rangle$ watching abc 's monday night & football & $\langle$ unk $\rangle$ \\ \hline
 want to move their telephones a little closer to the tv set $\langle$ unk $\rangle$ \\ $\langle$ unk $\rangle$ watching abc 's monday night football & can & $\langle$ unk $\rangle$ \\ \hline
@@ -587,31 +587,28 @@ Next we experimented with weight initialization in the model. The default behavi
 The baseline model used Stochastic Gradient Descent as the optimization method. We tried using the Adam optimizer instead, with a learning rate of .001 which is standard for the Adam optimizer. However, this increased the perplexity to about 124, so it seemed that the Adam optimizer did not work well given the current parameter values or the dataset. Finally, we tried adding dropout on the vertical connections between the layers. We tried dropout probabilities of 0.5 and 0.3, and both significantly improved the validation perplexity of our model. Dropout with ``keep" probability 0.5 improved the validation perplexity to 96.2, while dropout with ``keep" probability 0.3 improved it even further to 94.9.
 \newline
 \newline
-Since models with smaller vocabulary sizes naturally have a smaller perplexity, we did not experiment with the vocabulary size until the very end. Until now, we had set our vocabulary size to 10,000. Next, we tried variations of the data with vocabulary sizes of 5,000 and 15,000. Since perplexity could not be used to compare them, we generated samples from all three models and used them in a qualitative analysis.
+Since models with smaller vocabulary sizes naturally have a smaller perplexity, we did not experiment with the vocabulary size until the very end. Until now, we had set our vocabulary size to 10,000. Next, we tried variations of the model with vocabulary sizes of 5,000 and 15,000. Since perplexity could not be used to compare them, we generated samples from all three models and used them in a qualitative analysis.
 Below are model samples from each vocabulary size that we thought were representative of the model:
 
 \begin{table}[h]
 \centering
 \begin{tabular}{|c | c|} 
  \hline
- 5K vocab & $\langle$unk$\rangle$, as they reached white $\langle$unk$\rangle$ in
-the practice every shaded $\langle$unk$\rangle$  \\ & of $\langle$unk$\rangle$ of $\langle$unk$\rangle$ $\langle$unk$\rangle$ . $\langle$eos$\rangle$ \\ \hline
-10K vocab & the
-essence of general $\langle$unk$\rangle$ is bare , the wind , in the \\ & central shore stairs in the $\langle$unk$\rangle$ . $\langle$eos$\rangle$ \\ \hline
-15K vocab & i have thanked things less than sirius you may make \\ & a $\langle$unk$\rangle$ of man for men ever would ever
-make ,-- merchant \\ \hline
+ 5K & in the evening , i was born with myself as you $\langle$unk$\rangle$ ' s ' the $\langle$unk$\rangle$ counter until \\ & same little severity were sure to be $\langle$unk$\rangle$ , that all our passions is put on long sails waved on the $\langle$unk$\rangle$ . \\ \hline
+10K & my old lord $\langle$unk$\rangle$ , needs of that hope ; my ingenuity , the boy , who makes she tell her \\ & best !-- god ," he said , " for i ever thought of the $\langle$unk$\rangle$ of $\langle$unk$\rangle$ . \\ \hline
+15K & this $\langle$unk$\rangle$ would accompany me should lean , may never \\ & laugh in the matter ; a widow lancastrian joe ' s voice that possibly immediately alter . \\ \hline
 \end{tabular}
 \caption{Language samples for various vocabulary sizes}
 \label{table:1}
 \end{table}
 
-As we can see from the sample, generated language from the 5K vocabulary model has many $\langle$unk$\rangle$ symbols in its output. Even though the words in between $\langle$unk$\rangle$ are often grammatical and reasonable language, the high density of $\langle$unk$\rangle$ symbols make the generated output hard to read.
+As we can see from the sample, generated language from the 5K vocabulary model has many $\langle$unk$\rangle$ symbols in its output. Even though the words in between $\langle$unk$\rangle$ are often grammatical and reasonable language, the high density of $\langle$unk$\rangle$ symbols make the generated output hard to read. If we try to infer the parts of speech or types of words for which $\langle$unk$\rangle$ symbols appear, we often see adjectives and objects.
 \newline
 \newline
-For the 10K vocabulary model, there are noticably less $\langle$unk$\rangle$ symbols than in the 5K model which makes it easier to read. As in the sample above, many of the $\langle$unk$\rangle$ symbols occur in places where we expect a name or a place such as "general $\langle$unk$\rangle$" and "in the $\langle$unk$\rangle$", so they make sense. Occasionally, we see instances of language that don't seem quite natural or grammatical, such as the phrase "central shore stairs".
+For the 10K vocabulary model, there are noticably less $\langle$unk$\rangle$ symbols than in the 5K model which makes it easier to read. As in the sample above, many of the $\langle$unk$\rangle$ symbols occur in places where we expect a name or a place such as "lord $\langle$unk$\rangle$" and "of $\langle$unk$\rangle$", so they make sense. Occasionally, we see instances of language that don't seem quite natural or grammatical, such as the phrase "who makes she tell her".
 \newline
 \newline
-In the 15K vocabulary model, we see the lowest frequency of $\langle$unk$\rangle$ symbols. However, due to the larger number of in-vocabulary words, we see that the model sometimes guesses unusual or ungrammatical words when it would be better off leaving it as an $\langle$unk$\rangle$. In the sample above, the phrases "less than sirius" and "man for men" and "ever would ever" are indicative of this. Even though each is a sequence of words, it is hard to understand exactly what such a phrase would or should mean. 
+In the 15K vocabulary model, we see the lowest frequency of $\langle$unk$\rangle$ symbols. However, due to the larger number of in-vocabulary words, we see that the model sometimes guesses unusual or ungrammatical words when it would be better off leaving it as an $\langle$unk$\rangle$. In the sample above, the phrases "a widow lancastrian joe's voice" and "that possibly immediately alter" and are indicative of this. Even though each is a sequence of words, it is hard to understand exactly what such a phrase would or should mean. 
 \newline
 \newline
 Based on the generated language samples, we concluded that the 10K vocabulary size model best balanced having a low enough density of $\langle$unk$\rangle$ symbols while still having reasonable language between the $\langle$unk$\rangle$ symbols. For this reason, we chose to keep 10K as the vocabulary size for our best model. This completed the end of our parameter tuning process on the Gutenberg data, which is summarized in the following table:
